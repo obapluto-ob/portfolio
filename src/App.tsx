@@ -5,9 +5,9 @@ import Skills from './components/Skills'
 import Projects from './components/Projects'
 import Contact from './components/Contact'
 import ErrorBoundary from './components/ErrorBoundary'
-import ThemeToggle from './components/ThemeToggle'
 import ScrollProgress from './components/ScrollProgress'
 import BackToTop from './components/BackToTop'
+import LoadingSpinner from './components/LoadingSpinner'
 import analytics from './utils/analytics'
 
 interface PageConfig {
@@ -26,6 +26,14 @@ const pages: PageConfig[] = [
 
 function App() {
   const [currentPage, setCurrentPage] = useState(0)
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false)
+    }, 1500)
+    return () => clearTimeout(timer)
+  }, [])
 
   const nextPage = () => {
     if (currentPage < pages.length - 1) {
@@ -70,10 +78,13 @@ function App() {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [currentPage])
 
+  if (isLoading) {
+    return <LoadingSpinner />
+  }
+
   return (
     <div className="h-screen bg-slate-900 text-white relative overflow-hidden">
       <ScrollProgress currentPage={currentPage} totalPages={pages.length} />
-      <ThemeToggle />
       {/* Skip to content link for accessibility */}
       <a 
         href="#main-content" 

@@ -1,5 +1,6 @@
 import React from 'react'
 import { personalInfo } from '../data/portfolio'
+import TypingAnimation from './TypingAnimation'
 import analytics from '../utils/analytics'
 
 const Hero = () => {
@@ -13,7 +14,14 @@ const Hero = () => {
           {personalInfo.name}
         </h1>
         <p className="text-2xl text-slate-400 mb-4">
-          {personalInfo.title}
+          <TypingAnimation 
+            texts={[
+              "Full-stack Developer",
+              "React Specialist", 
+              "Python Developer",
+              "Mobile App Developer"
+            ]}
+          />
         </p>
         <p className="text-lg text-slate-500">
           Moringa School • {personalInfo.location}
