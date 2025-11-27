@@ -248,7 +248,7 @@ const About = () => {
           </div>
         </div>
 
-        <div className="text-center">
+        <div className="text-center mb-20">
           <p className="text-slate-500 text-sm">
             Based in {personalInfo.location} • Available for remote work worldwide
           </p>
