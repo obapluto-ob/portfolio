@@ -12,7 +12,7 @@ const Hero = () => {
       <div className="mb-8">
         <div className="w-32 h-32 mx-auto mb-6 rounded-full overflow-hidden border-4 border-blue-500/30 shadow-2xl">
           <img 
-            src="/profile.jpg" 
+            src="/4992579386737363750_121.jpg" 
             alt={personalInfo.name}
             className="w-full h-full object-cover"
             onError={(e) => {
