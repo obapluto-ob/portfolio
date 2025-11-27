@@ -20,8 +20,17 @@ const Hero = () => {
         Passionate about solving real-world problems through code.
       </p>
       
-      <div className="text-sm text-slate-500">
-        Click arrows or dots to navigate →
+      <div className="flex items-center justify-center space-x-6 mt-8">
+        <div className="text-sm text-slate-500">
+          Navigate: Arrows • Dots • Keyboard
+        </div>
+        <div className="flex space-x-2">
+          <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+          <div className="w-2 h-2 bg-slate-600 rounded-full"></div>
+          <div className="w-2 h-2 bg-slate-600 rounded-full"></div>
+          <div className="w-2 h-2 bg-slate-600 rounded-full"></div>
+          <div className="w-2 h-2 bg-slate-600 rounded-full"></div>
+        </div>
       </div>
     </div>
   )

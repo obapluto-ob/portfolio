@@ -1,12 +1,13 @@
 import React, { useState } from 'react'
 import Hero from './components/Hero'
-import Projects from './components/Projects'
+import About from './components/About'
 import Skills from './components/Skills'
+import Projects from './components/Projects'
 import Contact from './components/Contact'
 
 function App() {
   const [currentPage, setCurrentPage] = useState(0)
-  const pages = [Hero, Skills, Projects, Contact]
+  const pages = [Hero, About, Skills, Projects, Contact]
 
   const nextPage = () => {
     if (currentPage < pages.length - 1) {
