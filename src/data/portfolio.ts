@@ -31,8 +31,7 @@ export const personalInfo: PersonalInfo = {
   bio: "Full-stack Web & Mobile Developer at Moringa School. Building functional, scalable applications with modern technologies.",
   email: "obedlopeyok@gmail.com",
   github: "obapluto-ob",
-  location: "Kenya",
-  resume: "/resume.pdf"
+  location: "Kenya"
 }
 
 export const skillCategories = {
