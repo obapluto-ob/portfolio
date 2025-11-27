@@ -12,9 +12,48 @@ const Projects = () => {
         const userResponse = await fetch('https://api.github.com/users/obapluto-ob')
         const userData = await userResponse.json()
         
-        // Fetch repositories
-        const reposResponse = await fetch('https://api.github.com/users/obapluto-ob/repos?sort=updated&per_page=6')
-        const reposData = await reposResponse.json()
+        // Fetch pinned repositories
+        const pinnedQuery = `
+          query {
+            user(login: "obapluto-ob") {
+              pinnedItems(first: 6, types: REPOSITORY) {
+                nodes {
+                  ... on Repository {
+                    id
+                    name
+                    description
+                    url
+                    primaryLanguage {
+                      name
+                    }
+                  }
+                }
+              }
+            }
+          }
+        `
+        
+        const pinnedResponse = await fetch('https://api.github.com/graphql', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ query: pinnedQuery })
+        })
+        
+        let reposData = []
+        if (pinnedResponse.ok) {
+          const pinnedData = await pinnedResponse.json()
+          reposData = pinnedData.data?.user?.pinnedItems?.nodes || []
+        }
+        
+        // Fallback to regular repos if no pinned repos or API fails
+        // Fallback to regular repos if no pinned repos
+        if (reposData.length === 0) {
+          const reposResponse = await fetch('https://api.github.com/users/obapluto-ob/repos?sort=updated&per_page=6')
+          const fallbackData = await reposResponse.json()
+          reposData = fallbackData
+        }
         
         setGithubData(userData)
         setRepos(reposData)
@@ -93,7 +132,7 @@ const Projects = () => {
       
       {repos.length > 0 && (
         <div>
-          <h3 className="text-xl font-medium text-slate-300 mb-4">Recent Repositories</h3>
+          <h3 className="text-xl font-medium text-slate-300 mb-4">Pinned Repositories</h3>
           <div className="grid grid-cols-2 gap-4">
             {repos.slice(0, 4).map((repo) => (
               <div key={repo.id} className="bg-slate-800/30 rounded-lg p-4 border border-slate-700 text-left">
@@ -102,9 +141,9 @@ const Projects = () => {
                   {repo.description || 'No description available'}
                 </p>
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-slate-500">{repo.language}</span>
+                  <span className="text-slate-500">{repo.primaryLanguage?.name || repo.language}</span>
                   <a 
-                    href={repo.html_url}
+                    href={repo.url || repo.html_url}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-blue-400 hover:text-blue-300"
