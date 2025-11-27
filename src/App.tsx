@@ -105,7 +105,7 @@ function App() {
       <main 
         id="main-content"
         className={`h-full ${
-          currentPageConfig.scrollable ? 'overflow-y-auto p-8' : 'flex items-center justify-center'
+          currentPageConfig.scrollable ? 'overflow-y-auto p-8 pb-20' : 'flex items-center justify-center'
         }`}
         role="main"
         aria-label={`${currentPageConfig.name} section`}
