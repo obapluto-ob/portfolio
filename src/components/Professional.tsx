@@ -1,6 +1,6 @@
 import React from 'react'
 import SectionHeader from './SectionHeader'
-import Achievements from './Achievements'
+import RealAchievements from './RealAchievements'
 import TechnicalBlog from './TechnicalBlog'
 import OpenSourceContributions from './OpenSourceContributions'
 
@@ -10,7 +10,7 @@ const Professional = () => {
       <SectionHeader title="Professional Impact" />
       
       <div className="grid md:grid-cols-2 gap-6 mb-6">
-        <Achievements />
+        <RealAchievements />
         <TechnicalBlog />
       </div>
       
