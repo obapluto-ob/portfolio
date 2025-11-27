@@ -5,6 +5,9 @@ import Skills from './components/Skills'
 import Projects from './components/Projects'
 import Contact from './components/Contact'
 import ErrorBoundary from './components/ErrorBoundary'
+import ThemeToggle from './components/ThemeToggle'
+import ScrollProgress from './components/ScrollProgress'
+import BackToTop from './components/BackToTop'
 import analytics from './utils/analytics'
 
 interface PageConfig {
@@ -16,8 +19,8 @@ interface PageConfig {
 const pages: PageConfig[] = [
   { component: Hero, name: 'Home', scrollable: false },
   { component: Skills, name: 'Skills', scrollable: true },
-  { component: About, name: 'About', scrollable: true },
   { component: Projects, name: 'Projects', scrollable: true },
+  { component: About, name: 'About', scrollable: true },
   { component: Contact, name: 'Contact', scrollable: false }
 ]
 
@@ -45,6 +48,10 @@ function App() {
     analytics.trackPageView(pages[index].name)
   }
 
+  const goToTop = () => {
+    goToPage(0)
+  }
+
   const currentPageConfig = pages[currentPage]
   const CurrentComponent = currentPageConfig.component
 
@@ -65,6 +72,8 @@ function App() {
 
   return (
     <div className="h-screen bg-slate-900 text-white relative overflow-hidden">
+      <ScrollProgress currentPage={currentPage} totalPages={pages.length} />
+      <ThemeToggle />
       {/* Skip to content link for accessibility */}
       <a 
         href="#main-content" 
@@ -128,9 +137,11 @@ function App() {
       )}
 
       {/* Page Indicator */}
-      <div className="absolute top-8 right-8 text-slate-500 text-sm">
+      <div className="absolute top-8 right-16 text-slate-500 text-sm">
         {currentPage + 1} / {pages.length}
       </div>
+      
+      <BackToTop currentPage={currentPage} onGoToTop={goToTop} />
     </div>
   )
 }
