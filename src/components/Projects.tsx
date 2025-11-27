@@ -12,15 +12,9 @@ const Projects = () => {
         const userResponse = await fetch('https://api.github.com/users/obapluto-ob')
         const userData = await userResponse.json()
         
-        // Fetch repositories and filter for best ones
-        const reposResponse = await fetch('https://api.github.com/users/obapluto-ob/repos?sort=stars&per_page=20')
-        let allRepos = await reposResponse.json()
-        
-        // Filter for best repositories (non-forks, most recent)
-        const reposData = allRepos
-          .filter(repo => !repo.fork) // Exclude forks
-          .sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at)) // Sort by most recent
-          .slice(0, 6) // Take top 6
+        // Fetch repositories
+        const reposResponse = await fetch('https://api.github.com/users/obapluto-ob/repos?sort=updated&per_page=10')
+        const reposData = await reposResponse.json()
         
         setGithubData(userData)
         setRepos(reposData)
