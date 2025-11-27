@@ -29,7 +29,7 @@ export const personalInfo: PersonalInfo = {
   name: "Obed Emoni Lopeyok",
   title: "Full-stack Developer",
   bio: "Full-stack Web & Mobile Developer at Moringa School. Building functional, scalable applications with modern technologies.",
-  email: "obedlopeyok@gmail.com",
+  email: "obedemoni@gmail.com",
   github: "obapluto-ob",
   location: "Kenya"
 }

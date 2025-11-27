@@ -8,6 +8,8 @@ import ErrorBoundary from './components/ErrorBoundary'
 import ScrollProgress from './components/ScrollProgress'
 import BackToTop from './components/BackToTop'
 import LoadingSpinner from './components/LoadingSpinner'
+import VisitorCounter from './components/VisitorCounter'
+import EasterEgg from './components/EasterEgg'
 import analytics from './utils/analytics'
 
 interface PageConfig {
@@ -159,6 +161,8 @@ function App() {
       </div>
       
       <BackToTop currentPage={currentPage} onGoToTop={goToTop} />
+      <VisitorCounter />
+      <EasterEgg />
     </div>
   )
 }
