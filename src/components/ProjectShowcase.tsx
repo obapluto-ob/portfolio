@@ -13,6 +13,14 @@ interface Project {
 const ProjectShowcase = () => {
   const projects: Project[] = [
     {
+      title: "AutoClaimToken",
+      description: "Crypto recovery tool with token scanner, wallet discovery, and seed phrase restoration using dictionary brute force attacks. Advanced blockchain utilities.",
+      technologies: ["JavaScript", "Blockchain", "Crypto APIs", "Security"],
+      liveUrl: "https://autoclaimtoken.vercel.app",
+      githubUrl: "https://github.com/obapluto-ob/autoclaimtoken",
+      status: "live"
+    },
+    {
       title: "StopWatch Pro",
       description: "Precision stopwatch application for gym workouts, athletics training, and cooking. Features lap timing and clean interface.",
       technologies: ["JavaScript", "HTML5", "CSS3"],
