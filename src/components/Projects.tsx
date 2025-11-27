@@ -2,14 +2,26 @@ import React, { useState, useEffect } from 'react'
 
 const Projects = () => {
   const [githubData, setGithubData] = useState(null)
+  const [readme, setReadme] = useState('')
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const fetchGitHubData = async () => {
       try {
-        // Fetch user profile only
+        // Fetch user profile
         const userResponse = await fetch('https://api.github.com/users/obapluto-ob')
         const userData = await userResponse.json()
+        
+        // Fetch profile README
+        try {
+          const readmeResponse = await fetch('https://raw.githubusercontent.com/obapluto-ob/obapluto-ob/main/README.md')
+          if (readmeResponse.ok) {
+            const readmeText = await readmeResponse.text()
+            setReadme(readmeText)
+          }
+        } catch (error) {
+          console.log('No profile README found')
+        }
         
         setGithubData(userData)
         setLoading(false)
@@ -90,6 +102,29 @@ const Projects = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
               </svg>
             </a>
+          </div>
+        </div>
+      )}
+      
+      {readme && (
+        <div className="mt-8 bg-slate-800/30 rounded-lg p-6 border border-slate-700">
+          <h3 className="text-xl font-medium text-slate-300 mb-4">About Me</h3>
+          <div className="text-left text-slate-400 space-y-3">
+            {readme.split('\n').map((line, index) => {
+              if (line.startsWith('# ')) {
+                return <h4 key={index} className="text-lg font-medium text-slate-200 mt-4 mb-2">{line.replace('# ', '')}</h4>
+              }
+              if (line.startsWith('## ')) {
+                return <h5 key={index} className="text-base font-medium text-slate-300 mt-3 mb-1">{line.replace('## ', '')}</h5>
+              }
+              if (line.startsWith('- ')) {
+                return <li key={index} className="ml-4">{line.replace('- ', '')}</li>
+              }
+              if (line.trim()) {
+                return <p key={index}>{line}</p>
+              }
+              return null
+            })}
           </div>
         </div>
       )}
