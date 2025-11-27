@@ -31,13 +31,13 @@ const About = () => {
   }
 
   return (
-    <div className="max-w-4xl mx-auto relative">
-      {/* Floating Python Icon */}
-      <div className="absolute top-4 right-4 animate-bounce">
+    <div className="max-w-4xl mx-auto">
+      {/* Python Icon Header */}
+      <div className="text-center mb-6">
         <img 
-          src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" 
+          src="https://upload.wikimedia.org/wikipedia/commons/c/c3/Python-logo-notext.svg" 
           alt="Python" 
-          className="w-12 h-12 opacity-60"
+          className="w-16 h-16 mx-auto animate-bounce opacity-80"
         />
       </div>
       
@@ -47,14 +47,22 @@ const About = () => {
         <div className="bg-slate-800/30 rounded-lg p-8 border border-slate-700">
           <div className="text-left text-slate-400 space-y-4">
             {readme.split('\n').map((line, index) => {
-              // Skip HTML tags and image lines
+              // Skip HTML tags, image lines, and project sections
               if (line.includes('<img') || line.includes('<p align') || line.includes('</p>') || line.includes('<h1') || line.includes('</h1>') || line.includes('<h3') || line.includes('</h3>')) {
+                return null
+              }
+              
+              // Skip project-related sections
+              if (line.toLowerCase().includes('project') || line.toLowerCase().includes('repository') || line.toLowerCase().includes('repo')) {
                 return null
               }
               
               // Handle markdown headers
               if (line.startsWith('## ')) {
-                return <h4 key={index} className="text-xl font-medium text-slate-200 mt-6 mb-3">{line.replace('## ', '')}</h4>
+                const headerText = line.replace('## ', '')
+                // Skip project headers
+                if (headerText.toLowerCase().includes('project')) return null
+                return <h4 key={index} className="text-xl font-medium text-slate-200 mt-6 mb-3">{headerText}</h4>
               }
               if (line.startsWith('### ')) {
                 return <h5 key={index} className="text-lg font-medium text-slate-300 mt-4 mb-2">{line.replace('### ', '')}</h5>
