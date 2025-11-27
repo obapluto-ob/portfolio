@@ -16,10 +16,10 @@ const Projects = () => {
         const reposResponse = await fetch('https://api.github.com/users/obapluto-ob/repos?sort=stars&per_page=20')
         let allRepos = await reposResponse.json()
         
-        // Filter for best repositories (non-forks with descriptions or stars)
+        // Filter for best repositories (non-forks, most recent)
         const reposData = allRepos
           .filter(repo => !repo.fork) // Exclude forks
-          .filter(repo => repo.description || repo.stargazers_count > 0) // Has description or stars
+          .sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at)) // Sort by most recent
           .slice(0, 6) // Take top 6
         
         setGithubData(userData)
@@ -114,9 +114,16 @@ const Projects = () => {
                     </div>
                   )}
                 </div>
-                <p className="text-sm text-slate-400 mb-3">
-                  {repo.description || 'No description available'}
-                </p>
+                {repo.description && (
+                  <p className="text-sm text-slate-400 mb-3">
+                    {repo.description}
+                  </p>
+                )}
+                {!repo.description && (
+                  <p className="text-sm text-slate-500 italic mb-3">
+                    Repository created {new Date(repo.created_at).toLocaleDateString()}
+                  </p>
+                )}
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-slate-500">{repo.language}</span>
                   <a 
