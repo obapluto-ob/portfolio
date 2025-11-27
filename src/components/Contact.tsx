@@ -113,7 +113,7 @@ Best regards,
               </svg>
               <div className="text-left">
                 <div className="font-medium text-slate-300">LinkedIn</div>
-                <div className="text-sm text-slate-400">Connect with me</div>
+                <div className="text-sm text-slate-400">Obed Emoni</div>
               </div>
             </a>
             

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import SectionHeader from './SectionHeader'
+import GitHubActivity from './GitHubActivity'
 
 interface GitHubUser {
   avatar_url: string
@@ -130,7 +131,9 @@ const Projects = () => {
         </div>
       )}
       
-
+      <div className="mt-8">
+        <GitHubActivity />
+      </div>
     </div>
   )
 }
