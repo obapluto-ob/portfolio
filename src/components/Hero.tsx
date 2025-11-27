@@ -8,11 +8,11 @@ const Hero = () => {
           <span className="text-blue-400">Obed Emoni Lopeyok</span>
         </h1>
         <h2 className="text-2xl md:text-3xl text-gray-300 mb-8">
-          Software Engineering Student
+          Full-stack Web Developer | Moringa School | Nairobi, Kenya
         </h2>
         <p className="text-xl text-gray-400 mb-12 max-w-2xl mx-auto">
-          Passionate about building innovative solutions and learning cutting-edge technologies. 
-          Ready to contribute to impactful projects and grow in the software engineering field.
+          Full-stack Web Developer at Moringa School, Nairobi. I specialize in building functional, 
+          clean, and scalable applications using modern technologies. I believe in learning by building.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <a 

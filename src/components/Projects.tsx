@@ -3,13 +3,26 @@ import React from 'react'
 const Projects = () => {
   const projects = [
     {
-      title: "Portfolio Website",
-      description: "Modern React portfolio with automated Git deployment",
-      tech: ["React", "TypeScript", "Tailwind CSS", "GitHub Actions"],
-      github: "https://github.com/obapluto-ob/portfolio",
-      live: "https://obapluto-ob.github.io/portfolio"
+      title: "Crypto Investment Dashboard",
+      description: "A portfolio tracker and real-time crypto app with news, charts, and secure transaction history",
+      tech: ["React", "JavaScript", "API Integration", "Charts"],
+      github: "https://github.com/obapluto-ob/crypto-dashboard",
+      live: null
+    },
+    {
+      title: "SMS-Control System",
+      description: "Control a mobile device remotely via SMS commands (location, WhatsApp trigger)",
+      tech: ["Python", "SMS API", "Mobile Integration"],
+      github: "https://github.com/obapluto-ob/sms-control",
+      live: null
+    },
+    {
+      title: "Personal Portfolio CMS",
+      description: "Fully customizable Django-powered personal site with login, dashboard, and blog features",
+      tech: ["Django", "Python", "PostgreSQL", "HTML/CSS"],
+      github: "https://github.com/obapluto-ob/portfolio-cms",
+      live: null
     }
-    // Add more projects here as you build them
   ]
 
   return (

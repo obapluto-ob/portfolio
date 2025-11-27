@@ -8,8 +8,8 @@ const Contact = () => {
           <span className="text-blue-400">Let's Connect</span>
         </h2>
         <p className="text-xl text-gray-400 mb-12">
-          I'm always interested in new opportunities and collaborations. 
-          Let's discuss how we can work together!
+          "Code is only as powerful as the problems it solves. I build to solve, not just to ship." 
+          <br />Let's connect and build something amazing together!
         </p>
         
         <div className="flex flex-col sm:flex-row gap-6 justify-center">
@@ -32,7 +32,7 @@ const Contact = () => {
             <span>→</span>
           </a>
           <a 
-            href="mailto:your.email@example.com"
+            href="mailto:obedemoni@gmail.com"
             className="bg-green-600 hover:bg-green-700 px-6 py-3 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2"
           >
             <span>Email</span>
