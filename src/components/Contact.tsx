@@ -25,33 +25,33 @@ Best regards,
   const phoneLink = "tel:+254729237059"
 
   return (
-    <div className="h-full bg-gray-800 rounded-lg p-4">
-      <h2 className="text-xl font-bold mb-4 text-blue-400">Contact</h2>
-      <p className="text-xs text-gray-400 mb-4">
-        "Code is only as powerful as the problems it solves."
-      </p>
-      <div className="space-y-2">
+    <div className="bg-slate-800/50 rounded-lg p-6">
+      <h3 className="text-lg font-medium mb-4 text-slate-200">Get In Touch</h3>
+      <div className="grid grid-cols-3 gap-3">
         <a 
           href={emailLink}
-          className="block bg-green-600 hover:bg-green-700 px-3 py-2 rounded text-xs font-semibold transition-colors text-center"
+          className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded text-sm font-medium transition-colors text-center"
         >
-          📧 Email Me
+          Email
         </a>
         <a 
           href={phoneLink}
-          className="block bg-orange-600 hover:bg-orange-700 px-3 py-2 rounded text-xs font-semibold transition-colors text-center"
+          className="bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded text-sm font-medium transition-colors text-center"
         >
-          📱 Call: 0729237059
+          Call
         </a>
         <a 
           href="https://linkedin.com/in/obed-emoni"
           target="_blank"
           rel="noopener noreferrer"
-          className="block bg-blue-600 hover:bg-blue-700 px-3 py-2 rounded text-xs font-semibold transition-colors text-center"
+          className="bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded text-sm font-medium transition-colors text-center"
         >
-          💼 LinkedIn
+          LinkedIn
         </a>
       </div>
+      <p className="text-xs text-slate-500 mt-3 text-center">
+        0729237059 • obedemoni@gmail.com
+      </p>
     </div>
   )
 }

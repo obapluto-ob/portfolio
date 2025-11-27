@@ -29,32 +29,34 @@ const Projects = () => {
   ]
 
   return (
-    <div className="h-full bg-gray-800 rounded-lg p-4 overflow-y-auto">
-      <h2 className="text-xl font-bold mb-4 text-blue-400">Projects</h2>
-      <div className="grid grid-cols-3 gap-3 h-full">
-        {projects.map((project, index) => (
-          <div key={index} className="bg-gray-900 rounded-lg p-3 flex flex-col">
-            <h3 className="text-sm font-semibold mb-2 text-blue-300">
+    <div className="bg-slate-800/50 rounded-lg p-6">
+      <h3 className="text-lg font-medium mb-4 text-slate-200">Featured Projects</h3>
+      <div className="space-y-4">
+        {projects.slice(0, 2).map((project, index) => (
+          <div key={index} className="border-l-2 border-blue-500 pl-4">
+            <h4 className="font-medium text-slate-200 mb-1">
               {project.title}
-            </h3>
-            <p className="text-xs text-gray-400 mb-2 flex-1">
-              {project.description.substring(0, 80)}...
+            </h4>
+            <p className="text-sm text-slate-400 mb-2">
+              {project.description.substring(0, 100)}...
             </p>
-            <div className="flex flex-wrap gap-1 mb-2">
-              {project.tech.slice(0, 3).map((tech, i) => (
-                <span key={i} className="bg-blue-900 text-blue-200 px-1 py-0.5 rounded text-xs">
-                  {tech}
-                </span>
-              ))}
+            <div className="flex items-center justify-between">
+              <div className="flex gap-2">
+                {project.tech.slice(0, 2).map((tech, i) => (
+                  <span key={i} className="text-xs text-slate-500">
+                    {tech}
+                  </span>
+                ))}
+              </div>
+              <a 
+                href={project.github}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-400 hover:text-blue-300 text-sm font-medium"
+              >
+                View
+              </a>
             </div>
-            <a 
-              href={project.github}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-blue-400 hover:text-blue-300 text-xs font-medium"
-            >
-              GitHub →
-            </a>
           </div>
         ))}
       </div>
