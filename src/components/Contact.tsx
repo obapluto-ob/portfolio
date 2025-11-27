@@ -25,33 +25,36 @@ Best regards,
   const phoneLink = "tel:+254729237059"
 
   return (
-    <div className="bg-slate-800/50 rounded-lg p-6">
-      <h3 className="text-lg font-medium mb-4 text-slate-200">Get In Touch</h3>
-      <div className="grid grid-cols-3 gap-3">
-        <a 
-          href={emailLink}
-          className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded text-sm font-medium transition-colors text-center"
-        >
-          Email
-        </a>
-        <a 
-          href={phoneLink}
-          className="bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded text-sm font-medium transition-colors text-center"
-        >
-          Call
-        </a>
-        <a 
-          href="https://linkedin.com/in/obed-emoni"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded text-sm font-medium transition-colors text-center"
-        >
-          LinkedIn
-        </a>
+    <div>
+      <h3 className="text-lg mb-3 text-slate-300">Contact</h3>
+      <div className="space-y-1">
+        <div>
+          <a 
+            href={emailLink}
+            className="text-slate-400 hover:text-white transition-colors"
+          >
+            obedemoni@gmail.com
+          </a>
+        </div>
+        <div>
+          <a 
+            href={phoneLink}
+            className="text-slate-400 hover:text-white transition-colors"
+          >
+            0729237059
+          </a>
+        </div>
+        <div>
+          <a 
+            href="https://linkedin.com/in/obed-emoni"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-slate-400 hover:text-white transition-colors"
+          >
+            LinkedIn
+          </a>
+        </div>
       </div>
-      <p className="text-xs text-slate-500 mt-3 text-center">
-        0729237059 • obedemoni@gmail.com
-      </p>
     </div>
   )
 }
