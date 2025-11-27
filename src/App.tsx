@@ -19,7 +19,7 @@ interface PageConfig {
 }
 
 const pages: PageConfig[] = [
-  { component: Hero, name: 'Home', scrollable: true },
+  { component: Hero, name: 'Home', scrollable: false },
   { component: Skills, name: 'Skills', scrollable: true },
   { component: Projects, name: 'Projects', scrollable: true },
   { component: Professional, name: 'Professional', scrollable: true },
