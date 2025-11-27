@@ -27,7 +27,7 @@ function App() {
     <div className="h-screen bg-slate-900 text-white relative overflow-hidden">
       {/* Current Page */}
       <div className={`h-full ${
-        currentPage === 3 ? 'overflow-y-auto p-8' : 'flex items-center justify-center'
+        currentPage === 1 || currentPage === 3 ? 'overflow-y-auto p-8' : 'flex items-center justify-center'
       }`}>
         <CurrentComponent />
       </div>
