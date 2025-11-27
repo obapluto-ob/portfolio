@@ -12,48 +12,15 @@ const Projects = () => {
         const userResponse = await fetch('https://api.github.com/users/obapluto-ob')
         const userData = await userResponse.json()
         
-        // Fetch pinned repositories
-        const pinnedQuery = `
-          query {
-            user(login: "obapluto-ob") {
-              pinnedItems(first: 6, types: REPOSITORY) {
-                nodes {
-                  ... on Repository {
-                    id
-                    name
-                    description
-                    url
-                    primaryLanguage {
-                      name
-                    }
-                  }
-                }
-              }
-            }
-          }
-        `
+        // Fetch repositories and filter for best ones
+        const reposResponse = await fetch('https://api.github.com/users/obapluto-ob/repos?sort=stars&per_page=20')
+        let allRepos = await reposResponse.json()
         
-        const pinnedResponse = await fetch('https://api.github.com/graphql', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ query: pinnedQuery })
-        })
-        
-        let reposData = []
-        if (pinnedResponse.ok) {
-          const pinnedData = await pinnedResponse.json()
-          reposData = pinnedData.data?.user?.pinnedItems?.nodes || []
-        }
-        
-        // Fallback to regular repos if no pinned repos or API fails
-        // Fallback to regular repos if no pinned repos
-        if (reposData.length === 0) {
-          const reposResponse = await fetch('https://api.github.com/users/obapluto-ob/repos?sort=updated&per_page=6')
-          const fallbackData = await reposResponse.json()
-          reposData = fallbackData
-        }
+        // Filter for best repositories (non-forks with descriptions or stars)
+        const reposData = allRepos
+          .filter(repo => !repo.fork) // Exclude forks
+          .filter(repo => repo.description || repo.stargazers_count > 0) // Has description or stars
+          .slice(0, 6) // Take top 6
         
         setGithubData(userData)
         setRepos(reposData)
@@ -132,18 +99,28 @@ const Projects = () => {
       
       {repos.length > 0 && (
         <div>
-          <h3 className="text-xl font-medium text-slate-300 mb-4">Pinned Repositories</h3>
+          <h3 className="text-xl font-medium text-slate-300 mb-4">Featured Repositories</h3>
           <div className="grid grid-cols-2 gap-4">
             {repos.slice(0, 4).map((repo) => (
               <div key={repo.id} className="bg-slate-800/30 rounded-lg p-4 border border-slate-700 text-left">
-                <h4 className="font-medium text-slate-200 mb-2">{repo.name}</h4>
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="font-medium text-slate-200">{repo.name}</h4>
+                  {repo.stargazers_count > 0 && (
+                    <div className="flex items-center text-yellow-400 text-xs">
+                      <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                      </svg>
+                      {repo.stargazers_count}
+                    </div>
+                  )}
+                </div>
                 <p className="text-sm text-slate-400 mb-3">
                   {repo.description || 'No description available'}
                 </p>
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-slate-500">{repo.primaryLanguage?.name || repo.language}</span>
+                  <span className="text-slate-500">{repo.language}</span>
                   <a 
-                    href={repo.url || repo.html_url}
+                    href={repo.html_url}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-blue-400 hover:text-blue-300"
