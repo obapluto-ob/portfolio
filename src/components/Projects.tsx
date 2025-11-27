@@ -1,23 +1,37 @@
 import React, { useState, useEffect } from 'react'
+import SectionHeader from './SectionHeader'
+
+interface GitHubUser {
+  avatar_url: string
+  name: string
+  login: string
+  bio: string
+  public_repos: number
+  followers: number
+  following: number
+  created_at: string
+  html_url: string
+}
 
 const Projects = () => {
-  const [githubData, setGithubData] = useState(null)
+  const [githubData, setGithubData] = useState<GitHubUser | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const fetchGitHubData = async () => {
       try {
-        // Fetch user profile
         const userResponse = await fetch('https://api.github.com/users/obapluto-ob')
+        if (!userResponse.ok) {
+          throw new Error(`HTTP error! status: ${userResponse.status}`)
+        }
         const userData = await userResponse.json()
-        
-
-        
         setGithubData(userData)
         setLoading(false)
       } catch (error) {
-        console.error('Error fetching GitHub data:', error)
+        console.error('Failed to fetch GitHub data:', error)
+        setError('Failed to load GitHub data')
         setLoading(false)
       }
     }
@@ -28,15 +42,35 @@ const Projects = () => {
   if (loading) {
     return (
       <div className="text-center">
-        <h2 className="text-4xl font-light mb-12 text-slate-300">My Work</h2>
-        <div className="text-slate-400">Loading GitHub data...</div>
+        <SectionHeader title="My Work" />
+        <div className="flex items-center justify-center space-x-2">
+          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
+          <span className="text-slate-400">Loading GitHub data...</span>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="text-center">
+        <SectionHeader title="My Work" />
+        <div className="bg-red-900/20 border border-red-500/30 rounded-lg p-4 max-w-md mx-auto">
+          <div className="text-red-400">{error}</div>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="mt-2 text-sm text-red-300 hover:text-red-200 underline"
+          >
+            Try again
+          </button>
+        </div>
       </div>
     )
   }
 
   return (
     <div className="text-center max-w-3xl mx-auto">
-      <h2 className="text-4xl font-light mb-8 text-slate-300">My Work</h2>
+      <SectionHeader title="My Work" className="mb-8" />
       
       {githubData && (
         <div className="bg-slate-800/30 rounded-lg p-8 border border-slate-700">

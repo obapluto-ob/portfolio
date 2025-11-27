@@ -1,4 +1,8 @@
 import React, { useState, useEffect } from 'react'
+import { personalInfo, skillCategories } from '../data/portfolio'
+import SectionHeader from './SectionHeader'
+import LazyImage from './LazyImage'
+import analytics from '../utils/analytics'
 
 const About = () => {
   const [readme, setReadme] = useState('')
@@ -34,14 +38,14 @@ const About = () => {
     <div className="max-w-4xl mx-auto">
       {/* Python Icon Header */}
       <div className="text-center mb-6">
-        <img 
-          src="https://upload.wikimedia.org/wikipedia/commons/c/c3/Python-logo-notext.svg" 
-          alt="Python" 
+        <LazyImage
+          src="https://upload.wikimedia.org/wikipedia/commons/c/c3/Python-logo-notext.svg"
+          alt="Python"
           className="w-16 h-16 mx-auto animate-bounce opacity-80"
         />
       </div>
       
-      <h2 className="text-4xl font-light mb-8 text-slate-300 text-center">About Me</h2>
+      <SectionHeader title="About Me" className="mb-8" />
       
       {readme ? (
         <div className="bg-slate-800/30 rounded-lg p-8 border border-slate-700">
@@ -206,9 +210,10 @@ const About = () => {
       {/* GitHub Repositories Button */}
       <div className="text-center mt-8">
         <a 
-          href="https://github.com/obapluto-ob?tab=repositories" 
+          href={`https://github.com/${personalInfo.github}?tab=repositories`}
           target="_blank" 
           rel="noopener noreferrer"
+          onClick={() => analytics.trackClick('github_repositories', 'about')}
           className="inline-flex items-center px-6 py-3 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-lg transition-colors border border-slate-600"
         >
           <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
