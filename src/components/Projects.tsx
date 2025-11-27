@@ -109,22 +109,48 @@ const Projects = () => {
       {readme && (
         <div className="mt-8 bg-slate-800/30 rounded-lg p-6 border border-slate-700">
           <h3 className="text-xl font-medium text-slate-300 mb-4">About Me</h3>
-          <div className="text-left text-slate-400 space-y-3">
+          <div className="text-left text-slate-400 space-y-4">
             {readme.split('\n').map((line, index) => {
-              if (line.startsWith('# ')) {
-                return <h4 key={index} className="text-lg font-medium text-slate-200 mt-4 mb-2">{line.replace('# ', '')}</h4>
+              // Skip HTML tags and image lines
+              if (line.includes('<img') || line.includes('<p align') || line.includes('</p>') || line.includes('<h1') || line.includes('</h1>') || line.includes('<h3') || line.includes('</h3>')) {
+                return null
               }
+              
+              // Handle markdown headers
               if (line.startsWith('## ')) {
-                return <h5 key={index} className="text-base font-medium text-slate-300 mt-3 mb-1">{line.replace('## ', '')}</h5>
+                return <h4 key={index} className="text-lg font-medium text-slate-200 mt-6 mb-3">{line.replace('## ', '')}</h4>
               }
+              if (line.startsWith('### ')) {
+                return <h5 key={index} className="text-base font-medium text-slate-300 mt-4 mb-2">{line.replace('### ', '')}</h5>
+              }
+              
+              // Handle lists
               if (line.startsWith('- ')) {
-                return <li key={index} className="ml-4">{line.replace('- ', '')}</li>
+                return <li key={index} className="ml-4 mb-1">{line.replace('- ', '• ')}</li>
               }
+              
+              // Handle horizontal rules
+              if (line.trim() === '---') {
+                return <hr key={index} className="border-slate-600 my-6" />
+              }
+              
+              // Handle quotes
+              if (line.startsWith('> ')) {
+                return <blockquote key={index} className="border-l-4 border-blue-500 pl-4 italic text-slate-300 my-4">{line.replace('> ', '')}</blockquote>
+              }
+              
+              // Skip badge lines and empty lines
+              if (line.includes('![') || line.includes('https://img.shields.io') || !line.trim()) {
+                return null
+              }
+              
+              // Regular paragraphs
               if (line.trim()) {
-                return <p key={index}>{line}</p>
+                return <p key={index} className="leading-relaxed">{line}</p>
               }
+              
               return null
-            })}
+            }).filter(Boolean)}
           </div>
         </div>
       )}
