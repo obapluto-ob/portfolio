@@ -2,7 +2,7 @@ import React from 'react'
 import SectionHeader from './SectionHeader'
 import RealAchievements from './RealAchievements'
 import TechnicalBlog from './TechnicalBlog'
-import OpenSourceContributions from './OpenSourceContributions'
+import LearningJourney from './LearningJourney'
 
 const Professional = () => {
   return (
@@ -14,7 +14,7 @@ const Professional = () => {
         <TechnicalBlog />
       </div>
       
-      <OpenSourceContributions />
+      <LearningJourney />
     </div>
   )
 }

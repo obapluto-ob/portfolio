@@ -24,14 +24,18 @@ const pages: PageConfig[] = [
   { component: About, name: 'About & Contact', scrollable: true }
 ]
 
+// Loading duration for initial portfolio load
+const LOADING_DURATION = 1500
+
 function App() {
   const [currentPage, setCurrentPage] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
 
+  // Initialize loading state
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsLoading(false)
-    }, 1500)
+    }, LOADING_DURATION)
     return () => clearTimeout(timer)
   }, [])
 
@@ -63,10 +67,12 @@ function App() {
   const currentPageConfig = pages[currentPage]
   const CurrentComponent = currentPageConfig.component
 
+  // Track initial page view
   useEffect(() => {
     analytics.trackPageView(pages[currentPage].name)
-  }, [])
+  }, [currentPage])
 
+  // Handle keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'ArrowLeft') prevPage()
