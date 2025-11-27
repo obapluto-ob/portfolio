@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react'
 import { personalInfo, skillCategories } from '../data/portfolio'
 import SectionHeader from './SectionHeader'
 import LazyImage from './LazyImage'
+import Achievements from './Achievements'
+import TechnicalBlog from './TechnicalBlog'
+import OpenSourceContributions from './OpenSourceContributions'
 import analytics from '../utils/analytics'
 
 const About = () => {
@@ -113,6 +116,16 @@ const About = () => {
       )}
       
 
+      
+      {/* Professional Sections */}
+      <div className="grid md:grid-cols-2 gap-6 mt-12">
+        <Achievements />
+        <TechnicalBlog />
+      </div>
+      
+      <div className="mt-6">
+        <OpenSourceContributions />
+      </div>
       
       {/* GitHub Repositories Button */}
       <div className="text-center mt-8">
