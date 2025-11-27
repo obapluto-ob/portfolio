@@ -4,7 +4,6 @@ import About from './components/About'
 import Skills from './components/Skills'
 import Projects from './components/Projects'
 import Professional from './components/Professional'
-import Contact from './components/Contact'
 import ErrorBoundary from './components/ErrorBoundary'
 import ScrollProgress from './components/ScrollProgress'
 import BackToTop from './components/BackToTop'
@@ -21,9 +20,8 @@ const pages: PageConfig[] = [
   { component: Hero, name: 'Home', scrollable: false },
   { component: Skills, name: 'Skills', scrollable: true },
   { component: Projects, name: 'Projects', scrollable: true },
-  { component: About, name: 'About', scrollable: true },
   { component: Professional, name: 'Professional', scrollable: true },
-  { component: Contact, name: 'Contact', scrollable: false }
+  { component: About, name: 'About & Contact', scrollable: true }
 ]
 
 function App() {
