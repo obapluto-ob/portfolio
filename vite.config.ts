@@ -6,17 +6,13 @@ export default defineConfig({
   base: '/portfolio/',
   build: {
     outDir: 'dist',
+    assetsDir: 'assets',
     rollupOptions: {
       output: {
         manualChunks: {
-          vendor: ['react', 'react-dom'],
-          utils: ['./src/utils/analytics']
+          vendor: ['react', 'react-dom']
         }
       }
-    },
-    chunkSizeWarningLimit: 1000
-  },
-  optimizeDeps: {
-    include: ['react', 'react-dom']
+    }
   }
 })

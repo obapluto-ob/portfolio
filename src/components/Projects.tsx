@@ -50,7 +50,6 @@ const Projects = () => {
       </div>
     )
   }
-
   if (error) {
     return (
       <div className="text-center">
