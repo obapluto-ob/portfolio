@@ -27,12 +27,12 @@ const About = () => {
           </div>
           
           <div className="bg-slate-800/30 rounded-lg p-6 border border-slate-700">
-            <h4 className="text-lg font-medium text-slate-200 mb-3">Currently Learning</h4>
+            <h4 className="text-lg font-medium text-slate-200 mb-3">Education</h4>
             <ul className="text-slate-400 space-y-2 text-sm">
-              <li>• Advanced React Patterns</li>
-              <li>• Cloud Architecture</li>
-              <li>• DevOps Practices</li>
-              <li>• System Design</li>
+              <li>• Moringa School - Full-stack Development</li>
+              <li>• Software Engineering Program</li>
+              <li>• Nairobi, Kenya</li>
+              <li>• 2024 - Present</li>
             </ul>
           </div>
         </div>
