@@ -48,22 +48,34 @@ const GitHubActivity = () => {
     }
   }
 
+  const getRelativeTime = (dateString: string) => {
+    const now = new Date()
+    const eventTime = new Date(dateString)
+    const diffInSeconds = Math.floor((now.getTime() - eventTime.getTime()) / 1000)
+    
+    if (diffInSeconds < 60) return `${diffInSeconds}s ago`
+    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`
+    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`
+    if (diffInSeconds < 2592000) return `${Math.floor(diffInSeconds / 86400)}d ago`
+    return `${Math.floor(diffInSeconds / 2592000)}mo ago`
+  }
+
   const getEventIcon = (type: string) => {
     switch (type) {
       case 'PushEvent':
-        return '📝'
+        return '•'
       case 'CreateEvent':
-        return '🆕'
+        return '•'
       case 'ForkEvent':
-        return '🍴'
+        return '•'
       case 'WatchEvent':
-        return '⭐'
+        return '•'
       case 'IssuesEvent':
-        return '🐛'
+        return '•'
       case 'PullRequestEvent':
-        return '🔀'
+        return '•'
       default:
-        return '💻'
+        return '•'
     }
   }
 
@@ -86,11 +98,11 @@ const GitHubActivity = () => {
       <div className="space-y-3">
         {events.slice(0, 4).map((event) => (
           <div key={event.id} className="flex items-start space-x-3 text-sm">
-            <span className="text-lg">{getEventIcon(event.type)}</span>
+            <span className="text-blue-400 mt-1">{getEventIcon(event.type)}</span>
             <div>
               <p className="text-slate-300">{getEventDescription(event)}</p>
               <p className="text-slate-500 text-xs">
-                {new Date(event.created_at).toLocaleDateString()}
+                {getRelativeTime(event.created_at)}
               </p>
             </div>
           </div>
