@@ -21,7 +21,7 @@ const Hero = () => {
       </p>
       
       <div className="text-sm text-slate-500">
-        Scroll right to explore →
+        Click arrows or dots to navigate →
       </div>
     </div>
   )
