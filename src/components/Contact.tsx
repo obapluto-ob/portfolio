@@ -25,33 +25,36 @@ Best regards,
   const phoneLink = "tel:+254729237059"
 
   return (
-    <div>
-      <h3 className="text-lg mb-3 text-slate-300">Contact</h3>
-      <div className="space-y-1">
+    <div className="text-center">
+      <h2 className="text-4xl font-light mb-12 text-slate-300">Let's Connect</h2>
+      <div className="space-y-6 max-w-md mx-auto">
         <div>
+          <p className="text-slate-500 mb-2">Email</p>
           <a 
             href={emailLink}
-            className="text-slate-400 hover:text-white transition-colors"
+            className="text-xl text-slate-300 hover:text-white transition-colors"
           >
             obedemoni@gmail.com
           </a>
         </div>
         <div>
+          <p className="text-slate-500 mb-2">Phone</p>
           <a 
             href={phoneLink}
-            className="text-slate-400 hover:text-white transition-colors"
+            className="text-xl text-slate-300 hover:text-white transition-colors"
           >
             0729237059
           </a>
         </div>
         <div>
+          <p className="text-slate-500 mb-2">LinkedIn</p>
           <a 
             href="https://linkedin.com/in/obed-emoni"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-slate-400 hover:text-white transition-colors"
+            className="text-xl text-slate-300 hover:text-white transition-colors"
           >
-            LinkedIn
+            /in/obed-emoni
           </a>
         </div>
       </div>

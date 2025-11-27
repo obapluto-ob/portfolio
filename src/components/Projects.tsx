@@ -1,49 +1,24 @@
 import React from 'react'
 
 const Projects = () => {
-  const projects = [
-    {
-      title: "Crypto Investment Dashboard",
-      description: "A portfolio tracker and real-time crypto app with news, charts, and secure transaction history",
-      tech: ["React", "JavaScript", "API Integration", "Charts"],
-      github: "https://github.com/obapluto-ob/crypto-dashboard",
-      live: null,
-      image: "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=500&h=300&fit=crop"
-    },
-    {
-      title: "SMS-Control System",
-      description: "Control a mobile device remotely via SMS commands (location, WhatsApp trigger)",
-      tech: ["Python", "SMS API", "Mobile Integration"],
-      github: "https://github.com/obapluto-ob/sms-control",
-      live: null,
-      image: "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=500&h=300&fit=crop"
-    },
-    {
-      title: "Personal Portfolio CMS",
-      description: "Fully customizable Django-powered personal site with login, dashboard, and blog features",
-      tech: ["Django", "Python", "PostgreSQL", "HTML/CSS"],
-      github: "https://github.com/obapluto-ob/portfolio-cms",
-      live: null,
-      image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=500&h=300&fit=crop"
-    }
-  ]
-
   return (
-    <div>
-      <h3 className="text-lg mb-3 text-slate-300">Projects</h3>
-      <div className="space-y-2">
-        {projects.slice(0, 2).map((project, index) => (
-          <div key={index}>
-            <a 
-              href={project.github}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-slate-400 hover:text-white transition-colors"
-            >
-              {project.title}
-            </a>
-          </div>
-        ))}
+    <div className="text-center">
+      <h2 className="text-4xl font-light mb-8 text-slate-300">Projects</h2>
+      <div className="space-y-6 max-w-lg mx-auto">
+        <p className="text-slate-400 text-lg">
+          Currently building exciting projects at Moringa School.
+        </p>
+        <p className="text-slate-500">
+          Check back soon to see my latest work, or visit my GitHub for ongoing development.
+        </p>
+        <a 
+          href="https://github.com/obapluto-ob"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-block bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded transition-colors"
+        >
+          View GitHub
+        </a>
       </div>
     </div>
   )
