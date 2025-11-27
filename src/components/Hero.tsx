@@ -9,17 +9,28 @@ const Hero = () => {
   }
   return (
     <div className="text-center space-y-8">
-      <div>
+      <div className="mb-8">
+        <div className="w-32 h-32 mx-auto mb-6 rounded-full overflow-hidden border-4 border-blue-500/30 shadow-2xl">
+          <img 
+            src="/profile.jpg" 
+            alt={personalInfo.name}
+            className="w-full h-full object-cover"
+            onError={(e) => {
+              e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(personalInfo.name)}&size=128&background=3b82f6&color=ffffff&bold=true`
+            }}
+          />
+        </div>
         <h1 className="text-6xl font-light mb-6">
           {personalInfo.name}
         </h1>
-        <p className="text-2xl text-slate-400 mb-4">
+        <p className="text-2xl mb-4">
+          <span className="text-slate-400">Full-stack </span>
           <TypingAnimation 
             texts={[
-              "Full-stack Developer",
-              "React Specialist", 
+              "Web Developer",
+              "Mobile Developer", 
               "Python Developer",
-              "Mobile App Developer"
+              "React Specialist"
             ]}
           />
         </p>
