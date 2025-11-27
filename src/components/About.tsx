@@ -53,7 +53,7 @@ const About = () => {
               }
               
               // Skip project-related sections
-              if (line.toLowerCase().includes('project') || line.toLowerCase().includes('repository') || line.toLowerCase().includes('repo')) {
+              if (line.toLowerCase().includes('project') || line.toLowerCase().includes('repository') || line.toLowerCase().includes('repo') || line.toLowerCase().includes('crypto') || line.toLowerCase().includes('sms-control') || line.toLowerCase().includes('portfolio') || line.toLowerCase().includes('dashboard') || line.toLowerCase().includes('cms')) {
                 return null
               }
               
