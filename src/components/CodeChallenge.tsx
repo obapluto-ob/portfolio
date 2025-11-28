@@ -69,6 +69,41 @@ while (i < 10) {
     fix: "Add i++ inside loop",
     difficulty: "Easy",
     language: "JavaScript"
+  },
+  {
+    id: 6,
+    title: "Null Pointer",
+    code: `function getName(user) {
+  return user.profile.name;
+}`,
+    bug: "No null checking",
+    fix: "user?.profile?.name or null checks",
+    difficulty: "Medium",
+    language: "JavaScript"
+  },
+  {
+    id: 7,
+    title: "State Mutation",
+    code: `const addItem = (items, newItem) => {
+  items.push(newItem);
+  return items;
+}`,
+    bug: "Direct state mutation",
+    fix: "return [...items, newItem]",
+    difficulty: "Medium",
+    language: "React"
+  },
+  {
+    id: 8,
+    title: "Async/Await Error",
+    code: `async function getData() {
+  const data = await fetch('/api');
+  return data.json();
+}`,
+    bug: "No error handling",
+    fix: "try/catch block + response.ok check",
+    difficulty: "Hard",
+    language: "JavaScript"
   }
 ]
 
@@ -79,8 +114,9 @@ const CodeChallenge: React.FC = () => {
   const [attempts, setAttempts] = useState(0)
   const [showResult, setShowResult] = useState(false)
   const [isCorrect, setIsCorrect] = useState(false)
-  const [timeLeft, setTimeLeft] = useState(60)
+  const [timeLeft, setTimeLeft] = useState(90)
   const [gameActive, setGameActive] = useState(false)
+  const [showHint, setShowHint] = useState(false)
 
   useEffect(() => {
     if (gameActive && timeLeft > 0) {
@@ -96,9 +132,10 @@ const CodeChallenge: React.FC = () => {
     setScore(0)
     setAttempts(0)
     setCurrentChallenge(0)
-    setTimeLeft(60)
+    setTimeLeft(90)
     setShowResult(false)
     setUserAnswer('')
+    setShowHint(false)
   }
 
   const checkAnswer = () => {
@@ -120,10 +157,48 @@ const CodeChallenge: React.FC = () => {
       setCurrentChallenge(currentChallenge + 1)
       setUserAnswer('')
       setShowResult(false)
+      setShowHint(false)
     } else {
       setGameActive(false)
     }
   }
+
+  const prevChallenge = () => {
+    if (currentChallenge > 0) {
+      setCurrentChallenge(currentChallenge - 1)
+      setUserAnswer('')
+      setShowResult(false)
+      setShowHint(false)
+    }
+  }
+
+  const getHint = () => {
+    setShowHint(true)
+  }
+
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (!gameActive) return
+      
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault()
+        prevChallenge()
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault()
+        nextChallenge()
+      } else if (e.key === 'Enter' && userAnswer.trim() && !showResult) {
+        e.preventDefault()
+        checkAnswer()
+      } else if (e.key === 'h' || e.key === 'H') {
+        e.preventDefault()
+        getHint()
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyPress)
+    return () => window.removeEventListener('keydown', handleKeyPress)
+  }, [gameActive, showResult, userAnswer, currentChallenge])
 
   const challenge = challenges[currentChallenge]
 
@@ -178,17 +253,54 @@ const CodeChallenge: React.FC = () => {
             </div>
 
             <div className="mb-4">
-              <label className="block text-sm font-medium mb-2">
-                What's the bug? How would you fix it?
-              </label>
+              <div className="flex justify-between items-center mb-2">
+                <label className="block text-sm font-medium">
+                  What's the bug? How would you fix it?
+                </label>
+                <div className="flex gap-2">
+                  {!showHint && (
+                    <button
+                      onClick={getHint}
+                      className="text-xs bg-yellow-600 hover:bg-yellow-700 px-2 py-1 rounded"
+                    >
+                      Hint (H)
+                    </button>
+                  )}
+                  <button
+                    onClick={prevChallenge}
+                    disabled={currentChallenge === 0}
+                    className="text-xs bg-gray-600 hover:bg-gray-700 disabled:bg-gray-800 px-2 py-1 rounded"
+                  >
+                    ← Prev
+                  </button>
+                  <button
+                    onClick={nextChallenge}
+                    disabled={currentChallenge >= challenges.length - 1}
+                    className="text-xs bg-gray-600 hover:bg-gray-700 disabled:bg-gray-800 px-2 py-1 rounded"
+                  >
+                    Next →
+                  </button>
+                </div>
+              </div>
+              
+              {showHint && (
+                <div className="mb-3 p-3 bg-yellow-900/30 border border-yellow-600 rounded text-sm">
+                  <strong>💡 Hint:</strong> Look for: {challenge.bug}
+                </div>
+              )}
+              
               <textarea
                 value={userAnswer}
                 onChange={(e) => setUserAnswer(e.target.value)}
-                placeholder="Describe the bug and your fix..."
+                placeholder="Describe the bug and your fix... (Press Enter to submit)"
                 className="w-full p-3 bg-gray-800 border border-gray-600 rounded resize-none"
                 rows={3}
                 disabled={showResult}
               />
+              
+              <div className="mt-2 text-xs text-gray-500">
+                💡 Use ← → arrow keys to navigate • H for hint • Enter to submit
+              </div>
             </div>
 
             {!showResult ? (

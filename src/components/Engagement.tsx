@@ -4,6 +4,7 @@ import PortfolioRating from './PortfolioRating'
 import ShareButtons from './ShareButtons'
 import CodeChallenge from './CodeChallenge'
 import APIBuilder from './APIBuilder'
+import GuestbookEnhanced from './GuestbookEnhanced'
 
 const Engagement = () => {
   const [activeTool, setActiveTool] = useState<'debug' | 'api' | null>(null)
@@ -69,48 +70,8 @@ const Engagement = () => {
         )}
       </div>
       
-      {/* Guestbook Section */}
-      <div className="bg-slate-800/30 rounded-lg p-8 border border-slate-700">
-        <h3 className="text-xl font-medium text-slate-200 mb-6 text-center">Guestbook</h3>
-        
-        <div className="mb-6">
-          <textarea 
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            className="w-full bg-slate-700 border border-slate-600 rounded-lg p-4 text-slate-200 placeholder-slate-400"
-            placeholder="Leave a message for other visitors..."
-            rows={3}
-            maxLength={200}
-          />
-          <div className="flex justify-between items-center mt-2">
-            <span className="text-xs text-slate-500">{newMessage.length}/200</span>
-            <button 
-              onClick={handleAddMessage}
-              disabled={!newMessage.trim()}
-              className="bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 disabled:cursor-not-allowed px-4 py-2 rounded transition-colors"
-            >
-              Sign Guestbook
-            </button>
-          </div>
-        </div>
-        
-        {guestMessages.length > 0 && (
-          <div className="space-y-3">
-            <h4 className="font-medium text-slate-300">Recent Messages:</h4>
-            {guestMessages.slice(-5).reverse().map((message, index) => (
-              <div key={index} className="bg-slate-700/50 rounded-lg p-3 text-slate-300 text-sm">
-                "{message}"
-              </div>
-            ))}
-          </div>
-        )}
-        
-        {guestMessages.length === 0 && (
-          <div className="text-center text-slate-500 py-8">
-            Be the first to sign the guestbook!
-          </div>
-        )}
-      </div>
+      {/* Enhanced Guestbook */}
+      <GuestbookEnhanced />
     </div>
   )
 }
