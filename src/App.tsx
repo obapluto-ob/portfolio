@@ -9,7 +9,7 @@ import ErrorBoundary from './components/ErrorBoundary'
 import ScrollProgress from './components/ScrollProgress'
 import BackToTop from './components/BackToTop'
 import LoadingSpinner from './components/LoadingSpinner'
-import LiveVisitorCount from './components/LiveVisitorCount'
+
 import EasterEgg from './components/EasterEgg'
 import analytics from './utils/analytics'
 
@@ -163,7 +163,6 @@ function App() {
       </div>
       
       <BackToTop currentPage={currentPage} onGoToTop={goToTop} />
-      <LiveVisitorCount />
       <EasterEgg />
     </div>
   )
