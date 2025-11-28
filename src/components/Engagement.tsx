@@ -2,11 +2,11 @@ import React, { useState } from 'react'
 import SectionHeader from './SectionHeader'
 import PortfolioRating from './PortfolioRating'
 import ShareButtons from './ShareButtons'
-import SnakeGame from './SnakeGame'
-import MemoryGame from './MemoryGame'
+import CodeChallenge from './CodeChallenge'
+import APIBuilder from './APIBuilder'
 
 const Engagement = () => {
-  const [activeGame, setActiveGame] = useState<'snake' | 'memory' | null>(null)
+  const [activeTool, setActiveTool] = useState<'debug' | 'api' | null>(null)
   const [guestMessages, setGuestMessages] = useState<string[]>([])
   const [newMessage, setNewMessage] = useState('')
 
@@ -26,45 +26,45 @@ const Engagement = () => {
         <ShareButtons />
       </div>
       
-      {/* Mini Games Section */}
+      {/* Developer Tools Section */}
       <div className="bg-slate-800/30 rounded-lg p-8 border border-slate-700 mb-8">
-        <h3 className="text-xl font-medium text-slate-200 mb-6 text-center">Mini Games</h3>
+        <h3 className="text-xl font-medium text-slate-200 mb-6 text-center">Developer Tools</h3>
         
-        {!activeGame ? (
+        {!activeTool ? (
           <div className="grid md:grid-cols-2 gap-4 text-center">
             <button 
-              onClick={() => setActiveGame('snake')}
-              className="bg-green-600 hover:bg-green-700 px-6 py-8 rounded-lg transition-colors"
+              onClick={() => setActiveTool('debug')}
+              className="bg-blue-600 hover:bg-blue-700 px-6 py-8 rounded-lg transition-colors"
             >
-              <div className="text-3xl mb-2">🐍</div>
-              <div className="font-medium">Snake Game</div>
-              <div className="text-sm opacity-90 mt-1">Classic arcade fun</div>
+              <div className="text-3xl mb-2">🐛</div>
+              <div className="font-medium">Debug Challenge</div>
+              <div className="text-sm opacity-90 mt-1">Find & fix code bugs</div>
             </button>
             <button 
-              onClick={() => setActiveGame('memory')}
+              onClick={() => setActiveTool('api')}
               className="bg-purple-600 hover:bg-purple-700 px-6 py-8 rounded-lg transition-colors"
             >
-              <div className="text-3xl mb-2">🧩</div>
-              <div className="font-medium">Memory Game</div>
-              <div className="text-sm opacity-90 mt-1">Test your memory</div>
+              <div className="text-3xl mb-2">⚡</div>
+              <div className="font-medium">API Builder</div>
+              <div className="text-sm opacity-90 mt-1">Generate REST APIs</div>
             </button>
           </div>
         ) : (
           <div>
             <div className="flex justify-between items-center mb-4">
               <h4 className="text-lg font-medium text-slate-200">
-                {activeGame === 'snake' ? 'Snake Game' : 'Memory Game'}
+                {activeTool === 'debug' ? 'Debug Challenge' : 'API Builder'}
               </h4>
               <button
-                onClick={() => setActiveGame(null)}
+                onClick={() => setActiveTool(null)}
                 className="text-slate-400 hover:text-slate-200 px-3 py-1 rounded transition-colors"
               >
-                ← Back to Games
+                ← Back to Tools
               </button>
             </div>
             
-            {activeGame === 'snake' && <SnakeGame />}
-            {activeGame === 'memory' && <MemoryGame />}
+            {activeTool === 'debug' && <CodeChallenge />}
+            {activeTool === 'api' && <APIBuilder />}
           </div>
         )}
       </div>
