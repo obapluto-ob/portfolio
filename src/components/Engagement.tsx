@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { Code, Zap } from 'lucide-react'
 import SectionHeader from './SectionHeader'
 import PortfolioRating from './PortfolioRating'
 import ShareButtons from './ShareButtons'
@@ -37,7 +38,9 @@ const Engagement = () => {
               onClick={() => setActiveTool('debug')}
               className="bg-blue-600 hover:bg-blue-700 px-6 py-8 rounded-lg transition-colors"
             >
-              <div className="text-3xl mb-2">🐛</div>
+              <div className="text-3xl mb-2">
+                <Code className="w-8 h-8 mx-auto text-blue-400" />
+              </div>
               <div className="font-medium">Debug Challenge</div>
               <div className="text-sm opacity-90 mt-1">Find & fix code bugs</div>
             </button>
@@ -45,7 +48,9 @@ const Engagement = () => {
               onClick={() => setActiveTool('api')}
               className="bg-purple-600 hover:bg-purple-700 px-6 py-8 rounded-lg transition-colors"
             >
-              <div className="text-3xl mb-2">⚡</div>
+              <div className="text-3xl mb-2">
+                <Zap className="w-8 h-8 mx-auto text-purple-400" />
+              </div>
               <div className="font-medium">API Builder</div>
               <div className="text-sm opacity-90 mt-1">Generate REST APIs</div>
             </button>

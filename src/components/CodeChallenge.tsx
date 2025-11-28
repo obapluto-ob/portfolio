@@ -114,7 +114,7 @@ const CodeChallenge: React.FC = () => {
   const [attempts, setAttempts] = useState(0)
   const [showResult, setShowResult] = useState(false)
   const [isCorrect, setIsCorrect] = useState(false)
-  const [timeLeft, setTimeLeft] = useState(90)
+  const [timeLeft, setTimeLeft] = useState(135) // 1.5 min per challenge (90 sec * 1.5)
   const [gameActive, setGameActive] = useState(false)
   const [showHint, setShowHint] = useState(false)
 
@@ -132,7 +132,7 @@ const CodeChallenge: React.FC = () => {
     setScore(0)
     setAttempts(0)
     setCurrentChallenge(0)
-    setTimeLeft(90)
+    setTimeLeft(135)
     setShowResult(false)
     setUserAnswer('')
     setShowHint(false)
@@ -140,15 +140,38 @@ const CodeChallenge: React.FC = () => {
 
   const checkAnswer = () => {
     const challenge = challenges[currentChallenge]
-    const correct = userAnswer.toLowerCase().includes(challenge.fix.toLowerCase().substring(0, 5))
+    const answer = userAnswer.toLowerCase().trim()
+    const bugKeywords = challenge.bug.toLowerCase().split(' ')
+    const fixKeywords = challenge.fix.toLowerCase().split(' ')
+    
+    // Check if user identified the bug type
+    const identifiedBug = bugKeywords.some(keyword => 
+      keyword.length > 3 && answer.includes(keyword)
+    )
+    
+    // Check if user provided a valid fix
+    const providedFix = fixKeywords.some(keyword => 
+      keyword.length > 3 && answer.includes(keyword)
+    ) || answer.includes('fix') || answer.includes('solution') || answer.includes('correct')
+    
+    // Additional validation for specific challenge types
+    let specificValidation = false
+    if (challenge.id === 1) specificValidation = answer.includes('length') && answer.includes('-1')
+    if (challenge.id === 2) specificValidation = answer.includes('cleanup') || answer.includes('clearinterval')
+    if (challenge.id === 3) specificValidation = answer.includes('loading') || answer.includes('error')
+    if (challenge.id === 4) specificValidation = answer.includes('parameter') || answer.includes('prepared')
+    if (challenge.id === 5) specificValidation = answer.includes('increment') || answer.includes('i++')
+    
+    const correct = (identifiedBug && providedFix) || specificValidation || answer.length > 20
     
     setIsCorrect(correct)
     setShowResult(true)
     setAttempts(attempts + 1)
     
     if (correct) {
-      const points = challenge.difficulty === 'Easy' ? 10 : challenge.difficulty === 'Medium' ? 20 : 30
-      setScore(score + points)
+      const basePoints = challenge.difficulty === 'Easy' ? 10 : challenge.difficulty === 'Medium' ? 20 : 30
+      const timeBonus = timeLeft > 60 ? 5 : 0 // Bonus for quick answers
+      setScore(score + basePoints + timeBonus)
     }
   }
 
@@ -221,7 +244,7 @@ const CodeChallenge: React.FC = () => {
           <div className="p-8 text-center">
             <Zap className="w-16 h-16 mx-auto mb-4 text-yellow-400" />
             <h4 className="text-xl mb-4">Find & Fix Code Bugs</h4>
-            <p className="text-gray-400 mb-6">Identify bugs in real code snippets. You have 60 seconds!</p>
+            <p className="text-gray-400 mb-6">Identify bugs in real code snippets. You have 135 seconds total!</p>
             <button
               onClick={startGame}
               className="bg-blue-600 hover:bg-blue-700 px-8 py-3 rounded-lg font-medium transition-colors"
@@ -285,7 +308,7 @@ const CodeChallenge: React.FC = () => {
               
               {showHint && (
                 <div className="mb-3 p-3 bg-yellow-900/30 border border-yellow-600 rounded text-sm">
-                  <strong>💡 Hint:</strong> Look for: {challenge.bug}
+                  <strong>Hint:</strong> Look for: {challenge.bug}
                 </div>
               )}
               
@@ -299,7 +322,7 @@ const CodeChallenge: React.FC = () => {
               />
               
               <div className="mt-2 text-xs text-gray-500">
-                💡 Use ← → arrow keys to navigate • H for hint • Enter to submit
+Use arrow keys to navigate • H for hint • Enter to submit
               </div>
             </div>
 
