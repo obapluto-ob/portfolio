@@ -1,21 +1,23 @@
 import React, { useState, useEffect } from 'react'
+import SmartStorage from '../utils/smartStorage'
 
 const LiveVisitorCount = () => {
-  const [activeVisitors, setActiveVisitors] = useState(1)
-  const [totalVisitors, setTotalVisitors] = useState(0)
+  const [stats, setStats] = useState({ total: 0, today: 0, online: 1 })
 
   useEffect(() => {
-    // Simulate live visitors (random between 1-5)
-    const updateActiveVisitors = () => {
-      setActiveVisitors(Math.floor(Math.random() * 5) + 1)
+    // Track this visitor
+    SmartStorage.trackVisitor()
+    
+    // Get real stats
+    const updateStats = () => {
+      const visitorStats = SmartStorage.getVisitorStats()
+      setStats(visitorStats)
     }
-
-    // Get total visitors
-    const total = localStorage.getItem('portfolioVisitors')
-    if (total) setTotalVisitors(parseInt(total))
-
-    // Update active visitors every 10-30 seconds
-    const interval = setInterval(updateActiveVisitors, Math.random() * 20000 + 10000)
+    
+    updateStats()
+    
+    // Update stats every 30 seconds
+    const interval = setInterval(updateStats, 30000)
     
     return () => clearInterval(interval)
   }, [])
@@ -25,10 +27,10 @@ const LiveVisitorCount = () => {
       <div className="space-y-1">
         <div className="flex items-center space-x-2">
           <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-          <span>{activeVisitors} online now</span>
+          <span>{stats.online} online now</span>
         </div>
         <div className="text-slate-500 text-center">
-          {totalVisitors.toLocaleString()} total visits
+          {stats.total.toLocaleString()} total visits
         </div>
       </div>
     </div>
