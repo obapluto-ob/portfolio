@@ -44,45 +44,63 @@ class SmartStorage {
   trackVisitor(): void {
     const visitorId = this.getVisitorId()
     const today = new Date().toDateString()
-    const sessionKey = `session_${today}`
     
-    // Check if already visited today
-    const todayVisitors = JSON.parse(localStorage.getItem('daily_visitors') || '{}')
-    const allVisitors = JSON.parse(localStorage.getItem('all_visitors') || '[]')
+    // Get or initialize counters
+    let totalVisits = parseInt(localStorage.getItem('portfolio_total_visits') || '0')
+    let todayVisits = parseInt(localStorage.getItem(`portfolio_visits_${today}`) || '0')
     
-    if (!todayVisitors[today]) {
-      todayVisitors[today] = []
+    // Check if this visitor already counted today
+    const visitedToday = localStorage.getItem(`visited_${today}_${visitorId}`)
+    
+    if (!visitedToday) {
+      // New visitor for today
+      todayVisits++
+      totalVisits++
+      
+      localStorage.setItem('portfolio_total_visits', totalVisits.toString())
+      localStorage.setItem(`portfolio_visits_${today}`, todayVisits.toString())
+      localStorage.setItem(`visited_${today}_${visitorId}`, 'true')
     }
     
-    // Add to today's visitors if not already there
-    if (!todayVisitors[today].includes(visitorId)) {
-      todayVisitors[today].push(visitorId)
-      localStorage.setItem('daily_visitors', JSON.stringify(todayVisitors))
-    }
+    // Track active session for online count
+    const sessionId = `session_${Date.now()}_${Math.random()}`
+    sessionStorage.setItem('active_session', sessionId)
+    localStorage.setItem(`online_${sessionId}`, Date.now().toString())
     
-    // Add to all-time visitors if not already there
-    if (!allVisitors.includes(visitorId)) {
-      allVisitors.push(visitorId)
-      localStorage.setItem('all_visitors', JSON.stringify(allVisitors))
-    }
+    // Clean old online sessions (older than 5 minutes)
+    this.cleanOnlineSessions()
+  }
+
+  // Clean old online sessions
+  private cleanOnlineSessions(): void {
+    const fiveMinutesAgo = Date.now() - (5 * 60 * 1000)
     
-    // Track session (for "online now" simulation)
-    sessionStorage.setItem(sessionKey, visitorId)
+    Object.keys(localStorage).forEach(key => {
+      if (key.startsWith('online_')) {
+        const timestamp = parseInt(localStorage.getItem(key) || '0')
+        if (timestamp < fiveMinutesAgo) {
+          localStorage.removeItem(key)
+        }
+      }
+    })
   }
 
   // Get visitor statistics
   getVisitorStats(): { total: number; today: number; online: number } {
     const today = new Date().toDateString()
-    const todayVisitors = JSON.parse(localStorage.getItem('daily_visitors') || '{}')
-    const allVisitors = JSON.parse(localStorage.getItem('all_visitors') || '[]')
     
-    // Simulate online users (1-3 based on today's visitors)
-    const todayCount = todayVisitors[today]?.length || 0
-    const online = Math.min(Math.max(1, Math.floor(todayCount / 2)), 3)
+    // Get persistent counters
+    const total = parseInt(localStorage.getItem('portfolio_total_visits') || '0')
+    const todayCount = parseInt(localStorage.getItem(`portfolio_visits_${today}`) || '0')
+    
+    // Count active online sessions
+    this.cleanOnlineSessions()
+    const onlineSessions = Object.keys(localStorage).filter(key => key.startsWith('online_'))
+    const online = Math.max(1, onlineSessions.length)
     
     return {
-      total: allVisitors.length,
-      today: todayCount,
+      total: Math.max(total, 1), // Ensure at least 1
+      today: Math.max(todayCount, 1),
       online: online
     }
   }
