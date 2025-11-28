@@ -107,7 +107,7 @@ function App() {
       <main 
         id="main-content"
         className={`h-full ${
-          currentPageConfig.scrollable ? 'overflow-y-auto p-8 pb-20' : 'flex items-center justify-center'
+          currentPageConfig.scrollable ? 'overflow-y-auto p-4 sm:p-6 lg:p-8 pb-20' : 'flex items-center justify-center p-4'
         }`}
         role="main"
         aria-label={`${currentPageConfig.name} section`}
@@ -119,7 +119,7 @@ function App() {
 
       {/* Navigation Dots */}
       <nav 
-        className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-3"
+        className="absolute bottom-4 sm:bottom-6 lg:bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-2 sm:space-x-3"
         role="navigation"
         aria-label="Page navigation"
       >
@@ -127,7 +127,7 @@ function App() {
           <button
             key={page.name}
             onClick={() => goToPage(index)}
-            className={`w-3 h-3 rounded-full transition-colors ${
+            className={`w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full transition-colors ${
               index === currentPage ? 'bg-blue-500' : 'bg-slate-600 hover:bg-slate-500'
             }`}
             aria-label={`Go to ${page.name} page`}
@@ -140,7 +140,7 @@ function App() {
       {currentPage > 0 && (
         <button
           onClick={prevPage}
-          className="absolute left-8 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-white text-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 rounded p-2"
+          className="absolute left-2 sm:left-4 lg:left-8 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-white text-xl sm:text-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 rounded p-1 sm:p-2"
           aria-label="Previous page"
         >
           ←
@@ -150,7 +150,7 @@ function App() {
       {currentPage < pages.length - 1 && (
         <button
           onClick={nextPage}
-          className="absolute right-8 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-white text-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 rounded p-2"
+          className="absolute right-2 sm:right-4 lg:right-8 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-white text-xl sm:text-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 rounded p-1 sm:p-2"
           aria-label="Next page"
         >
           →
@@ -158,7 +158,7 @@ function App() {
       )}
 
       {/* Page Indicator */}
-      <div className="absolute top-8 right-16 text-slate-500 text-sm">
+      <div className="absolute top-4 sm:top-6 lg:top-8 right-4 sm:right-8 lg:right-16 text-slate-500 text-xs sm:text-sm">
         {currentPage + 1} / {pages.length}
       </div>
       
