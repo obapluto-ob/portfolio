@@ -153,7 +153,7 @@ const Projects = () => {
                 <span className="px-2 py-1 bg-green-600/20 text-green-400 text-xs rounded">TypeScript</span>
               </div>
               <div className="flex gap-2">
-                <a href="https://obapluto-ob.github.io/StopWatch-Pro/" target="_blank" rel="noopener noreferrer" 
+                <a href="https://phase-1-stop-watch-applictation.vercel.app/" target="_blank" rel="noopener noreferrer" 
                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-center py-2 rounded text-sm transition-colors">
                   Live Demo
                 </a>
@@ -181,7 +181,7 @@ const Projects = () => {
                 <span className="px-2 py-1 bg-purple-600/20 text-purple-400 text-xs rounded">CSS3</span>
               </div>
               <div className="flex gap-2">
-                <a href="https://obapluto-ob.github.io/Ludomania/" target="_blank" rel="noopener noreferrer" 
+                <a href="https://ludomania-iota.vercel.app" target="_blank" rel="noopener noreferrer" 
                    className="flex-1 bg-green-600 hover:bg-green-700 text-center py-2 rounded text-sm transition-colors">
                   Live Demo
                 </a>
@@ -209,7 +209,7 @@ const Projects = () => {
                 <span className="px-2 py-1 bg-blue-600/20 text-blue-400 text-xs rounded">Web3</span>
               </div>
               <div className="flex gap-2">
-                <a href="https://obapluto-ob.github.io/AutoClaimToken/" target="_blank" rel="noopener noreferrer" 
+                <a href="https://autoclaimtoken.vercel.app" target="_blank" rel="noopener noreferrer" 
                    className="flex-1 bg-yellow-600 hover:bg-yellow-700 text-center py-2 rounded text-sm transition-colors">
                   Live Demo
                 </a>
