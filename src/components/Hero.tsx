@@ -1,8 +1,6 @@
 import React from 'react'
 import { personalInfo } from '../data/portfolio'
 import TypingAnimation from './TypingAnimation'
-import PortfolioRating from './PortfolioRating'
-import ShareButtons from './ShareButtons'
 import analytics from '../utils/analytics'
 
 const Hero = () => {
@@ -58,12 +56,7 @@ const Hero = () => {
         </a>
       </div>
       
-      <div className="grid md:grid-cols-2 gap-4 max-w-md mx-auto mt-8">
-        <PortfolioRating />
-        <ShareButtons />
-      </div>
-      
-      <div className="text-sm text-slate-500 mt-6">
+      <div className="text-sm text-slate-500 mt-8">
         Navigate: Arrows • Dots • Keyboard
       </div>
     </div>
