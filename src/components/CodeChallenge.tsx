@@ -117,6 +117,7 @@ const CodeChallenge: React.FC = () => {
   const [timeLeft, setTimeLeft] = useState(135) // 1.5 min per challenge (90 sec * 1.5)
   const [gameActive, setGameActive] = useState(false)
   const [showHint, setShowHint] = useState(false)
+  const [feedback, setFeedback] = useState('')
 
   useEffect(() => {
     if (gameActive && timeLeft > 0) {
@@ -162,7 +163,7 @@ const CodeChallenge: React.FC = () => {
     if (challenge.id === 4) specificValidation = answer.includes('parameter') || answer.includes('prepared')
     if (challenge.id === 5) specificValidation = answer.includes('increment') || answer.includes('i++')
     
-    const correct = (identifiedBug && providedFix) || specificValidation || answer.length > 20
+    const correct = (identifiedBug && providedFix) || specificValidation
     
     setIsCorrect(correct)
     setShowResult(true)
@@ -170,8 +171,11 @@ const CodeChallenge: React.FC = () => {
     
     if (correct) {
       const basePoints = challenge.difficulty === 'Easy' ? 10 : challenge.difficulty === 'Medium' ? 20 : 30
-      const timeBonus = timeLeft > 60 ? 5 : 0 // Bonus for quick answers
+      const timeBonus = timeLeft > 60 ? 5 : 0
       setScore(score + basePoints + timeBonus)
+      setFeedback('')
+    } else {
+      setFeedback(analyzeAnswer(userAnswer, challenge))
     }
   }
 
@@ -197,6 +201,33 @@ const CodeChallenge: React.FC = () => {
 
   const getHint = () => {
     setShowHint(true)
+  }
+
+  const analyzeAnswer = (answer: string, challenge: Challenge) => {
+    const lowerAnswer = answer.toLowerCase().trim()
+    
+    if (challenge.id === 1) {
+      if (!lowerAnswer.includes('length')) {
+        return "Look at how the array is being accessed. What property gives you the array size?"
+      }
+      return "Close! arr.length gives the count, but arrays start at index 0. What should you subtract?"
+    }
+    
+    if (challenge.id === 2) {
+      if (!lowerAnswer.includes('cleanup') && !lowerAnswer.includes('clear')) {
+        return "useEffect can return a cleanup function. What should happen when the component unmounts?"
+      }
+      return "You're on track! The timer needs to be cleared. What function stops a setInterval?"
+    }
+    
+    if (challenge.id === 5) {
+      if (!lowerAnswer.includes('i++') && !lowerAnswer.includes('increment')) {
+        return "Look at the loop variable 'i'. It starts at 0 and should reach 10, but what's missing?"
+      }
+      return "The loop condition checks i < 10, but i never changes. What statement increments i?"
+    }
+    
+    return "Not quite right. Focus on what the code is supposed to do vs what it actually does."
   }
 
   // Keyboard navigation
@@ -342,9 +373,17 @@ Use arrow keys to navigate • H for hint • Enter to submit
                   <div className="flex items-center gap-2 mb-2">
                     {isCorrect ? <Check className="w-5 h-5 text-green-400" /> : <X className="w-5 h-5 text-red-400" />}
                     <span className="font-medium">
-                      {isCorrect ? 'Correct!' : 'Not quite right'}
+                      {isCorrect ? 'Correct!' : 'Incorrect'}
                     </span>
                   </div>
+                  
+                  {!isCorrect && feedback && (
+                    <div className="mb-3 p-3 bg-blue-900/30 border border-blue-500 rounded text-sm">
+                      <div className="font-medium text-blue-400 mb-1">Debug Analysis:</div>
+                      <div className="text-blue-200">{feedback}</div>
+                    </div>
+                  )}
+                  
                   <div className="text-sm">
                     <div className="font-medium mb-1">Bug: {challenge.bug}</div>
                     <div>Fix: {challenge.fix}</div>
