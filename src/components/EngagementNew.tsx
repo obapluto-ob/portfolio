@@ -13,11 +13,21 @@ const Engagement = () => {
   const [messages, setMessages] = useState<Array<{id: string, text: string, timestamp: any, reactions?: {[key: string]: number}}>>([])
   const [loading, setLoading] = useState(false)
 
+  const [userReactions, setUserReactions] = useState<{[messageId: string]: string}>({})
+
   useEffect(() => {
     loadMessages()
     loadRatings()
     checkIfUserRated()
+    loadUserReactions()
   }, [])
+
+  const loadUserReactions = () => {
+    const saved = localStorage.getItem('userReactions')
+    if (saved) {
+      setUserReactions(JSON.parse(saved))
+    }
+  }
 
   const loadRatings = async () => {
     try {
@@ -94,6 +104,8 @@ const Engagement = () => {
   }
 
   const addReaction = async (messageId: string, emoji: string) => {
+    const currentReaction = userReactions[messageId]
+    
     // Play reaction sound
     const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBC13yO/eizEIHWq+8+OWT')
     audio.volume = 0.3
@@ -106,7 +118,30 @@ const Engagement = () => {
       if (messageDoc.exists()) {
         const data = messageDoc.data()
         const reactions = data.reactions || {}
-        reactions[emoji] = (reactions[emoji] || 0) + 1
+        
+        // If user already reacted with this emoji, remove it (unreact)
+        if (currentReaction === emoji) {
+          reactions[emoji] = Math.max(0, (reactions[emoji] || 0) - 1)
+          if (reactions[emoji] === 0) delete reactions[emoji]
+          
+          const newUserReactions = { ...userReactions }
+          delete newUserReactions[messageId]
+          setUserReactions(newUserReactions)
+          localStorage.setItem('userReactions', JSON.stringify(newUserReactions))
+        } else {
+          // Remove previous reaction if exists
+          if (currentReaction) {
+            reactions[currentReaction] = Math.max(0, (reactions[currentReaction] || 0) - 1)
+            if (reactions[currentReaction] === 0) delete reactions[currentReaction]
+          }
+          
+          // Add new reaction
+          reactions[emoji] = (reactions[emoji] || 0) + 1
+          
+          const newUserReactions = { ...userReactions, [messageId]: emoji }
+          setUserReactions(newUserReactions)
+          localStorage.setItem('userReactions', JSON.stringify(newUserReactions))
+        }
         
         await setDoc(messageRef, { ...data, reactions }, { merge: true })
         loadMessages()
@@ -277,18 +312,25 @@ const Engagement = () => {
                 {/* Reactions */}
                 <div className="flex items-center space-x-2">
                   <div className="flex space-x-1">
-                    {['👍', '❤️', '😊', '🔥'].map(emoji => (
-                      <button
-                        key={emoji}
-                        onClick={() => addReaction(msg.id, emoji)}
-                        className="flex items-center space-x-1 bg-slate-600 hover:bg-slate-500 px-2 py-1 rounded text-xs transition-colors"
-                      >
-                        <span>{emoji}</span>
-                        <span className="text-slate-300">
-                          {msg.reactions?.[emoji] || 0}
-                        </span>
-                      </button>
-                    ))}
+                    {['👍', '❤️', '😊', '🔥'].map(emoji => {
+                      const isUserReaction = userReactions[msg.id] === emoji
+                      return (
+                        <button
+                          key={emoji}
+                          onClick={() => addReaction(msg.id, emoji)}
+                          className={`flex items-center space-x-1 px-2 py-1 rounded text-xs transition-colors ${
+                            isUserReaction 
+                              ? 'bg-blue-600 hover:bg-blue-700' 
+                              : 'bg-slate-600 hover:bg-slate-500'
+                          }`}
+                        >
+                          <span>{emoji}</span>
+                          <span className="text-slate-300">
+                            {msg.reactions?.[emoji] || 0}
+                          </span>
+                        </button>
+                      )
+                    })}
                   </div>
                 </div>
               </div>
