@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import Hero from './components/Hero'
-import About from './components/About'
+import AboutEnhanced from './components/AboutEnhanced'
 import Skills from './components/Skills'
 import Projects from './components/Projects'
 import Professional from './components/Professional'
@@ -9,7 +9,6 @@ import ErrorBoundary from './components/ErrorBoundary'
 import ScrollProgress from './components/ScrollProgress'
 import BackToTop from './components/BackToTop'
 import LoadingSpinner from './components/LoadingSpinner'
-
 import EasterEgg from './components/EasterEgg'
 import analytics from './utils/analytics'
 
@@ -25,7 +24,7 @@ const pages: PageConfig[] = [
   { component: Projects, name: 'Projects', scrollable: true },
   { component: Professional, name: 'Professional', scrollable: true },
   { component: Engagement, name: 'Engage', scrollable: true },
-  { component: About, name: 'About & Contact', scrollable: true }
+  { component: AboutEnhanced, name: 'About & Contact', scrollable: true }
 ]
 
 // Loading duration for initial portfolio load

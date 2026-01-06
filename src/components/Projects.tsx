@@ -139,11 +139,13 @@ const Projects = () => {
           
           {/* StopWatch Pro */}
           <div className="bg-slate-800/50 rounded-lg border border-slate-600 overflow-hidden hover:border-blue-500 transition-colors">
-            <div className="aspect-video bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center">
-              <div className="text-center text-white">
-                <div className="text-4xl mb-2">⏱️</div>
-                <div className="font-medium">StopWatch Pro</div>
-              </div>
+            <div className="aspect-video bg-slate-700 overflow-hidden">
+              <iframe 
+                src="https://phase-1-stop-watch-applictation.vercel.app/" 
+                className="w-full h-full border-0 scale-75 origin-top-left" 
+                style={{width: '133.33%', height: '133.33%'}}
+                title="StopWatch Pro Preview"
+              />
             </div>
             <div className="p-4">
               <h4 className="font-medium text-slate-200 mb-2">StopWatch Pro</h4>
@@ -167,11 +169,13 @@ const Projects = () => {
 
           {/* Ludomania */}
           <div className="bg-slate-800/50 rounded-lg border border-slate-600 overflow-hidden hover:border-green-500 transition-colors">
-            <div className="aspect-video bg-gradient-to-br from-green-600 to-teal-600 flex items-center justify-center">
-              <div className="text-center text-white">
-                <div className="text-4xl mb-2">🎮</div>
-                <div className="font-medium">Ludomania</div>
-              </div>
+            <div className="aspect-video bg-slate-700 overflow-hidden">
+              <iframe 
+                src="https://ludomania-iota.vercel.app" 
+                className="w-full h-full border-0 scale-75 origin-top-left" 
+                style={{width: '133.33%', height: '133.33%'}}
+                title="Ludomania Preview"
+              />
             </div>
             <div className="p-4">
               <h4 className="font-medium text-slate-200 mb-2">Ludomania</h4>
@@ -193,27 +197,29 @@ const Projects = () => {
             </div>
           </div>
 
-          {/* AutoClaimToken */}
+          {/* BPay App */}
           <div className="bg-slate-800/50 rounded-lg border border-slate-600 overflow-hidden hover:border-yellow-500 transition-colors">
-            <div className="aspect-video bg-gradient-to-br from-yellow-600 to-orange-600 flex items-center justify-center">
-              <div className="text-center text-white">
-                <div className="text-4xl mb-2">🪙</div>
-                <div className="font-medium">AutoClaimToken</div>
-              </div>
+            <div className="aspect-video bg-slate-700 overflow-hidden">
+              <iframe 
+                src="https://bpayapp.co.ke" 
+                className="w-full h-full border-0 scale-75 origin-top-left" 
+                style={{width: '133.33%', height: '133.33%'}}
+                title="BPay App Preview"
+              />
             </div>
             <div className="p-4">
-              <h4 className="font-medium text-slate-200 mb-2">AutoClaimToken</h4>
-              <p className="text-sm text-slate-400 mb-3">Automated token claiming system with smart contracts</p>
+              <h4 className="font-medium text-slate-200 mb-2">BPay App</h4>
+              <p className="text-sm text-slate-400 mb-3">Modern payment solution platform with secure transactions</p>
               <div className="flex flex-wrap gap-2 mb-3">
-                <span className="px-2 py-1 bg-yellow-600/20 text-yellow-400 text-xs rounded">Solidity</span>
-                <span className="px-2 py-1 bg-blue-600/20 text-blue-400 text-xs rounded">Web3</span>
+                <span className="px-2 py-1 bg-yellow-600/20 text-yellow-400 text-xs rounded">React</span>
+                <span className="px-2 py-1 bg-blue-600/20 text-blue-400 text-xs rounded">Node.js</span>
               </div>
               <div className="flex gap-2">
-                <a href="https://autoclaimtoken.vercel.app" target="_blank" rel="noopener noreferrer" 
+                <a href="https://bpayapp.co.ke" target="_blank" rel="noopener noreferrer" 
                    className="flex-1 bg-yellow-600 hover:bg-yellow-700 text-center py-2 rounded text-sm transition-colors">
                   Live Demo
                 </a>
-                <a href="https://github.com/obapluto-ob/AutoClaimToken" target="_blank" rel="noopener noreferrer" 
+                <a href="https://github.com/obapluto-ob/bpay-app" target="_blank" rel="noopener noreferrer" 
                    className="flex-1 bg-slate-700 hover:bg-slate-600 text-center py-2 rounded text-sm transition-colors">
                   Code
                 </a>
@@ -221,10 +227,6 @@ const Projects = () => {
             </div>
           </div>
         </div>
-      </div>
-      
-      <div className="mt-12">
-        <GitHubActivity />
       </div>
     </div>
   )

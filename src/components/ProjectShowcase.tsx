@@ -13,11 +13,11 @@ interface Project {
 const ProjectShowcase = () => {
   const projects: Project[] = [
     {
-      title: "AutoClaimToken",
-      description: "Crypto recovery tool with token scanner, wallet discovery, and seed phrase restoration using dictionary brute force attacks. Advanced blockchain utilities.",
-      technologies: ["JavaScript", "Blockchain", "Crypto APIs", "Security"],
-      liveUrl: "https://autoclaimtoken.vercel.app",
-      githubUrl: "https://github.com/obapluto-ob/autoclaimtoken",
+      title: "BPay App",
+      description: "Modern payment solution platform enabling seamless digital transactions. Live production app serving real users with secure payment processing.",
+      technologies: ["React", "Node.js", "Payment APIs", "Security"],
+      liveUrl: "https://bpayapp.co.ke",
+      githubUrl: "https://github.com/obapluto-ob/bpay-app",
       status: "live"
     },
     {

@@ -1,82 +1,162 @@
-import React, { useState } from 'react'
-import { Code, Zap } from 'lucide-react'
+import React, { useState, useEffect } from 'react'
+import { collection, addDoc, getDocs, query, orderBy, limit } from 'firebase/firestore'
+import { db } from '../firebase'
 import SectionHeader from './SectionHeader'
-import PortfolioRating from './PortfolioRating'
-import ShareButtons from './ShareButtons'
-import CodeChallenge from './CodeChallenge'
-import APIBuilder from './APIBuilder'
-import GuestbookEnhanced from './GuestbookEnhanced'
 
 const Engagement = () => {
-  const [activeTool, setActiveTool] = useState<'debug' | 'api' | null>(null)
-  const [guestMessages, setGuestMessages] = useState<string[]>([])
-  const [newMessage, setNewMessage] = useState('')
+  const [rating, setRating] = useState(0)
+  const [hasRated, setHasRated] = useState(false)
+  const [message, setMessage] = useState('')
+  const [messages, setMessages] = useState<Array<{id: string, text: string, timestamp: any}>>([])
+  const [loading, setLoading] = useState(false)
 
-  const handleAddMessage = () => {
-    if (newMessage.trim()) {
-      setGuestMessages(prev => [...prev, newMessage.trim()])
-      setNewMessage('')
+  useEffect(() => {
+    loadMessages()
+    console.log('Firebase connected:', db ? 'YES' : 'NO')
+  }, [])
+
+  const loadMessages = async () => {
+    try {
+      const q = query(collection(db, 'messages'), orderBy('timestamp', 'desc'), limit(10))
+      const snapshot = await getDocs(q)
+      const msgs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+      setMessages(msgs)
+    } catch (error) {
+      console.error('Error loading messages:', error)
     }
+  }
+
+  const handleRating = (stars: number) => {
+    if (hasRated) return
+    setRating(stars)
+    setHasRated(true)
+  }
+
+  const addMessage = async () => {
+    const trimmed = message.trim()
+    
+    if (!trimmed || trimmed.length < 3) return
+    if (trimmed.length > 200) {
+      alert('Message too long (max 200 characters)')
+      return
+    }
+    
+    const spamWords = ['spam', 'buy now', 'click here', 'free money', 'viagra']
+    const hasSpam = spamWords.some(word => trimmed.toLowerCase().includes(word))
+    if (hasSpam) {
+      alert('Message contains inappropriate content')
+      return
+    }
+    
+    setLoading(true)
+    try {
+      await addDoc(collection(db, 'messages'), {
+        text: trimmed,
+        timestamp: new Date()
+      })
+      setMessage('')
+      loadMessages()
+    } catch (error) {
+      console.error('Error adding message:', error)
+      alert('Failed to add message')
+    }
+    setLoading(false)
+  }
+
+  const copyPortfolioLink = () => {
+    navigator.clipboard.writeText(window.location.href)
+    alert('Portfolio link copied!')
   }
 
   return (
     <div className="max-w-4xl mx-auto">
-      <SectionHeader title="Engage & Play" />
+      <SectionHeader title="Engage & Connect" />
       
       <div className="grid md:grid-cols-2 gap-8 mb-8">
-        <PortfolioRating />
-        <ShareButtons />
-      </div>
-      
-      {/* Developer Tools Section */}
-      <div className="bg-slate-800/30 rounded-lg p-8 border border-slate-700 mb-8">
-        <h3 className="text-xl font-medium text-slate-200 mb-6 text-center">Developer Tools</h3>
-        
-        {!activeTool ? (
-          <div className="grid md:grid-cols-2 gap-4 text-center">
-            <button 
-              onClick={() => setActiveTool('debug')}
-              className="bg-blue-600 hover:bg-blue-700 px-6 py-8 rounded-lg transition-colors"
+        {/* Portfolio Rating */}
+        <div className="bg-slate-800/30 rounded-lg p-6 border border-slate-700 text-center">
+          <h3 className="text-xl font-medium text-slate-200 mb-4">Rate This Portfolio</h3>
+          <div className="flex justify-center space-x-2 mb-4">
+            {[1, 2, 3, 4, 5].map((star) => (
+              <button
+                key={star}
+                onClick={() => handleRating(star)}
+                disabled={hasRated}
+                className={`text-2xl transition-colors ${
+                  star <= rating ? 'text-yellow-400' : 'text-slate-600'
+                } ${!hasRated ? 'hover:text-yellow-300' : 'cursor-default'}`}
+              >
+                ★
+              </button>
+            ))}
+          </div>
+          {hasRated && (
+            <div className="text-green-400">Thanks for rating! ⭐</div>
+          )}
+        </div>
+
+        {/* Share Portfolio */}
+        <div className="bg-slate-800/30 rounded-lg p-6 border border-slate-700">
+          <h3 className="text-xl font-medium text-slate-200 mb-4 text-center">Share Portfolio</h3>
+          <div className="space-y-3">
+            <a
+              href={`https://twitter.com/intent/tweet?text=Check out this amazing developer portfolio!&url=${window.location.href}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center space-x-2 bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded transition-colors"
             >
-              <div className="text-3xl mb-2">
-                <Code className="w-8 h-8 mx-auto text-blue-400" />
-              </div>
-              <div className="font-medium">Debug Challenge</div>
-              <div className="text-sm opacity-90 mt-1">Find & fix code bugs</div>
-            </button>
-            <button 
-              onClick={() => setActiveTool('api')}
-              className="bg-purple-600 hover:bg-purple-700 px-6 py-8 rounded-lg transition-colors"
+              <span>Share on Twitter</span>
+            </a>
+            <a
+              href={`https://www.linkedin.com/sharing/share-offsite/?url=${window.location.href}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center space-x-2 bg-blue-700 hover:bg-blue-800 px-4 py-2 rounded transition-colors"
             >
-              <div className="text-3xl mb-2">
-                <Zap className="w-8 h-8 mx-auto text-purple-400" />
-              </div>
-              <div className="font-medium">API Builder</div>
-              <div className="text-sm opacity-90 mt-1">Generate REST APIs</div>
+              <span>Share on LinkedIn</span>
+            </a>
+            <button
+              onClick={copyPortfolioLink}
+              className="w-full bg-slate-600 hover:bg-slate-700 px-4 py-2 rounded transition-colors"
+            >
+              Copy Portfolio Link
             </button>
           </div>
-        ) : (
-          <div>
-            <div className="flex justify-between items-center mb-4">
-              <h4 className="text-lg font-medium text-slate-200">
-                {activeTool === 'debug' ? 'Debug Challenge' : 'API Builder'}
-              </h4>
-              <button
-                onClick={() => setActiveTool(null)}
-                className="text-slate-400 hover:text-slate-200 px-3 py-1 rounded transition-colors"
-              >
-                ← Back to Tools
-              </button>
-            </div>
-            
-            {activeTool === 'debug' && <CodeChallenge />}
-            {activeTool === 'api' && <APIBuilder />}
+        </div>
+      </div>
+      
+      {/* Quick Guestbook */}
+      <div className="bg-slate-800/30 rounded-lg p-6 border border-slate-700">
+        <h3 className="text-xl font-medium text-slate-200 mb-4">Leave a Message</h3>
+        <div className="flex space-x-3 mb-4">
+          <input
+            type="text"
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            placeholder="Leave a quick message..."
+            className="flex-1 bg-slate-700 border border-slate-600 rounded px-3 py-2 text-white placeholder-slate-400"
+            onKeyPress={(e) => e.key === 'Enter' && addMessage()}
+          />
+          <button
+            onClick={addMessage}
+            disabled={loading}
+            className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 px-4 py-2 rounded transition-colors"
+          >
+            {loading ? 'Adding...' : 'Add'}
+          </button>
+        </div>
+        
+        {messages.length > 0 && (
+          <div className="space-y-2">
+            <h4 className="text-slate-300 font-medium">Recent Messages:</h4>
+            {messages.map((msg) => (
+              <div key={msg.id} className="bg-slate-700/50 p-3 rounded text-slate-300">
+                {msg.text}
+              </div>
+            ))}
           </div>
         )}
       </div>
-      
-      {/* Enhanced Guestbook */}
-      <GuestbookEnhanced />
     </div>
   )
 }
