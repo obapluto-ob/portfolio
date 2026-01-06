@@ -10,7 +10,7 @@ const Engagement = () => {
   const [totalRatings, setTotalRatings] = useState(0)
   const [ratingBreakdown, setRatingBreakdown] = useState({ 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 })
   const [message, setMessage] = useState('')
-  const [messages, setMessages] = useState<Array<{id: string, text: string, timestamp: any}>>([])
+  const [messages, setMessages] = useState<Array<{id: string, text: string, timestamp: any, reactions?: {[key: string]: number}}>>([])
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
@@ -90,6 +90,24 @@ const Engagement = () => {
       setMessages(msgs)
     } catch (error) {
       console.error('Error loading messages:', error)
+    }
+  }
+
+  const addReaction = async (messageId: string, emoji: string) => {
+    try {
+      const messageRef = doc(db, 'messages', messageId)
+      const messageDoc = await getDoc(messageRef)
+      
+      if (messageDoc.exists()) {
+        const data = messageDoc.data()
+        const reactions = data.reactions || {}
+        reactions[emoji] = (reactions[emoji] || 0) + 1
+        
+        await setDoc(messageRef, { ...data, reactions }, { merge: true })
+        loadMessages()
+      }
+    } catch (error) {
+      console.error('Error adding reaction:', error)
     }
   }
 
@@ -245,11 +263,29 @@ const Engagement = () => {
         </div>
         
         {messages.length > 0 && (
-          <div className="space-y-2">
+          <div className="space-y-3">
             <h4 className="text-slate-300 font-medium">Recent Messages:</h4>
             {messages.map((msg) => (
-              <div key={msg.id} className="bg-slate-700/50 p-3 rounded text-slate-300">
-                {msg.text}
+              <div key={msg.id} className="bg-slate-700/50 p-4 rounded">
+                <div className="text-slate-300 mb-2">{msg.text}</div>
+                
+                {/* Reactions */}
+                <div className="flex items-center space-x-2">
+                  <div className="flex space-x-1">
+                    {['👍', '❤️', '😊', '🔥'].map(emoji => (
+                      <button
+                        key={emoji}
+                        onClick={() => addReaction(msg.id, emoji)}
+                        className="flex items-center space-x-1 bg-slate-600 hover:bg-slate-500 px-2 py-1 rounded text-xs transition-colors"
+                      >
+                        <span>{emoji}</span>
+                        <span className="text-slate-300">
+                          {msg.reactions?.[emoji] || 0}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
             ))}
           </div>
