@@ -10,6 +10,10 @@ const LiveVisitorCounter = () => {
   useEffect(() => {
     const trackVisitor = async () => {
       try {
+        // Check if user already visited today
+        const today = new Date().toDateString()
+        const lastVisit = localStorage.getItem('lastVisit')
+        
         // Add current visitor
         await setDoc(doc(db, 'visitors', sessionId), {
           timestamp: new Date(),
@@ -17,16 +21,20 @@ const LiveVisitorCounter = () => {
           active: true
         })
 
-        // Update total views
-        const statsRef = doc(db, 'portfolio', 'stats')
-        const statsDoc = await getDoc(statsRef)
-        const currentStats = statsDoc.exists() ? statsDoc.data() : { totalViews: 0 }
-        
-        await setDoc(statsRef, {
-          ...currentStats,
-          totalViews: (currentStats.totalViews || 0) + 1,
-          lastUpdated: new Date()
-        }, { merge: true })
+        // Only increment views if new visitor today
+        if (lastVisit !== today) {
+          const statsRef = doc(db, 'portfolio', 'stats')
+          const statsDoc = await getDoc(statsRef)
+          const currentStats = statsDoc.exists() ? statsDoc.data() : { totalViews: 0 }
+          
+          await setDoc(statsRef, {
+            ...currentStats,
+            totalViews: (currentStats.totalViews || 0) + 1,
+            lastUpdated: new Date()
+          }, { merge: true })
+          
+          localStorage.setItem('lastVisit', today)
+        }
 
       } catch (error) {
         console.error('Error tracking visitor:', error)
@@ -46,28 +54,29 @@ const LiveVisitorCounter = () => {
 
     const countActiveVisitors = async () => {
       try {
-        // Get all visitors
         const visitorsSnapshot = await getDocs(collection(db, 'visitors'))
         const now = new Date()
         let activeCount = 0
+        const cleanupPromises: Promise<void>[] = []
         
-        visitorsSnapshot.forEach(async (doc) => {
-          const data = doc.data()
+        visitorsSnapshot.forEach((docSnapshot) => {
+          const data = docSnapshot.data()
           const lastSeen = data.lastSeen?.toDate()
           
           if (lastSeen) {
             const timeDiff = now.getTime() - lastSeen.getTime()
             const minutesDiff = timeDiff / (1000 * 60)
             
-            if (minutesDiff < 2) { // Active if seen within 2 minutes
+            if (minutesDiff < 2) {
               activeCount++
             } else {
-              // Remove inactive visitors
-              await deleteDoc(doc.ref)
+              cleanupPromises.push(deleteDoc(docSnapshot.ref))
             }
           }
         })
         
+        // Execute cleanup
+        await Promise.all(cleanupPromises)
         setCurrentVisitors(activeCount)
       } catch (error) {
         console.error('Error counting visitors:', error)
