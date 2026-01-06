@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { doc, setDoc, getDoc, onSnapshot } from 'firebase/firestore'
+import { doc, setDoc, getDoc, onSnapshot, collection, query, where, getDocs, deleteDoc } from 'firebase/firestore'
 import { db } from '../firebase'
 
 const LiveVisitorCounter = () => {
@@ -13,7 +13,8 @@ const LiveVisitorCounter = () => {
         // Add current visitor
         await setDoc(doc(db, 'visitors', sessionId), {
           timestamp: new Date(),
-          lastSeen: new Date()
+          lastSeen: new Date(),
+          active: true
         })
 
         // Update total views
@@ -35,11 +36,41 @@ const LiveVisitorCounter = () => {
     const updateHeartbeat = async () => {
       try {
         await setDoc(doc(db, 'visitors', sessionId), {
-          timestamp: new Date(),
-          lastSeen: new Date()
+          lastSeen: new Date(),
+          active: true
         }, { merge: true })
       } catch (error) {
         console.error('Error updating heartbeat:', error)
+      }
+    }
+
+    const countActiveVisitors = async () => {
+      try {
+        // Get all visitors
+        const visitorsSnapshot = await getDocs(collection(db, 'visitors'))
+        const now = new Date()
+        let activeCount = 0
+        
+        visitorsSnapshot.forEach(async (doc) => {
+          const data = doc.data()
+          const lastSeen = data.lastSeen?.toDate()
+          
+          if (lastSeen) {
+            const timeDiff = now.getTime() - lastSeen.getTime()
+            const minutesDiff = timeDiff / (1000 * 60)
+            
+            if (minutesDiff < 2) { // Active if seen within 2 minutes
+              activeCount++
+            } else {
+              // Remove inactive visitors
+              await deleteDoc(doc.ref)
+            }
+          }
+        })
+        
+        setCurrentVisitors(activeCount)
+      } catch (error) {
+        console.error('Error counting visitors:', error)
       }
     }
 
@@ -48,13 +79,12 @@ const LiveVisitorCounter = () => {
 
     // Update heartbeat every 30 seconds
     const heartbeatInterval = setInterval(updateHeartbeat, 30000)
-
-    // Listen to visitor count changes
-    const unsubscribeVisitors = onSnapshot(doc(db, 'portfolio', 'visitors'), (doc) => {
-      if (doc.exists()) {
-        setCurrentVisitors(doc.data().count || 0)
-      }
-    })
+    
+    // Count active visitors every 10 seconds
+    const countInterval = setInterval(countActiveVisitors, 10000)
+    
+    // Initial count
+    countActiveVisitors()
 
     // Listen to stats changes
     const unsubscribeStats = onSnapshot(doc(db, 'portfolio', 'stats'), (doc) => {
@@ -66,15 +96,11 @@ const LiveVisitorCounter = () => {
     // Cleanup on unmount
     return () => {
       clearInterval(heartbeatInterval)
-      unsubscribeVisitors()
+      clearInterval(countInterval)
       unsubscribeStats()
       
       // Remove visitor on leave
-      setDoc(doc(db, 'visitors', sessionId), {
-        timestamp: new Date(),
-        lastSeen: new Date(),
-        left: true
-      }, { merge: true }).catch(() => {})
+      deleteDoc(doc(db, 'visitors', sessionId)).catch(() => {})
     }
   }, [sessionId])
 
