@@ -103,7 +103,7 @@ const Engagement = () => {
     }
     
     const spamWords = ['spam', 'buy now', 'click here', 'free money', 'viagra']
-    const hasSpam = spamWords.some(word => trimmed.toLowerCase().includes(word))
+    const hasSpam = spamWords.some(word => trimmed.toLowerCase().includes(word.toLowerCase()))
     if (hasSpam) {
       alert('Message contains inappropriate content')
       return
