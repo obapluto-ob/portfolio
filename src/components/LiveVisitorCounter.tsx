@@ -5,7 +5,7 @@ import { db } from '../firebase'
 const LiveVisitorCounter = () => {
   const [currentVisitors, setCurrentVisitors] = useState(0)
   const [totalViews, setTotalViews] = useState(0)
-  const [sessionId] = useState(() => Math.random().toString(36).substr(2, 9))
+  const [sessionId] = useState(() => Math.random().toString(36).substring(2, 11))
 
   useEffect(() => {
     const trackVisitor = async () => {
