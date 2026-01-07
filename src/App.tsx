@@ -5,12 +5,15 @@ import Skills from './components/Skills'
 import Projects from './components/Projects'
 import Professional from './components/Professional'
 import EngagementNew from './components/EngagementNew'
+import Testimonials from './components/Testimonials'
+import TechnicalBlog from './components/TechnicalBlog'
 import ErrorBoundary from './components/ErrorBoundary'
 import ScrollProgress from './components/ScrollProgress'
 import BackToTop from './components/BackToTop'
 import LoadingSpinner from './components/LoadingSpinner'
 import LiveVisitorCounter from './components/LiveVisitorCounter'
 import EasterEgg from './components/EasterEgg'
+import PerformanceMonitor from './components/PerformanceMonitor'
 import analytics from './utils/analytics'
 
 interface PageConfig {
@@ -24,6 +27,8 @@ const pages: PageConfig[] = [
   { component: Skills, name: 'Skills', scrollable: true },
   { component: Projects, name: 'Projects', scrollable: true },
   { component: Professional, name: 'Professional', scrollable: true },
+  { component: Testimonials, name: 'Testimonials', scrollable: true },
+  { component: TechnicalBlog, name: 'Blog', scrollable: true },
   { component: EngagementNew, name: 'Engage', scrollable: true },
   { component: AboutEnhanced, name: 'About & Contact', scrollable: true }
 ]
@@ -165,6 +170,7 @@ function App() {
       <BackToTop currentPage={currentPage} onGoToTop={goToTop} />
       <LiveVisitorCounter />
       <EasterEgg />
+      <PerformanceMonitor />
     </div>
   )
 }

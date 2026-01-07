@@ -5,6 +5,7 @@ import LazyImage from './LazyImage'
 import ContactForm from './ContactForm'
 import ResumeDownload from './ResumeDownload'
 import Testimonials from './Testimonials'
+import SocialLinks from './SocialLinks'
 import analytics from '../utils/analytics'
 
 const AboutEnhanced = () => {
@@ -138,6 +139,11 @@ const AboutEnhanced = () => {
             <h3 className="text-xl font-medium text-slate-200 mb-6">Get In Touch</h3>
             <div className="space-y-4">
               <ResumeDownload />
+              
+              <div className="pt-4">
+                <h4 className="text-sm font-medium text-slate-300 mb-3">Connect with me</h4>
+                <SocialLinks />
+              </div>
               
               <a 
                 href={`mailto:${personalInfo.email}?subject=${encodeURIComponent("Hiring Inquiry - Full-stack Developer Position")}&body=${encodeURIComponent(`Hi Obed,\n\nI came across your portfolio and I'm impressed with your work. I would like to discuss potential opportunities for:\n\n□ Full-stack Web Development\n□ Mobile App Development\n□ Project Collaboration\n□ Other: ___________\n\nProject Details:\n- Timeline: \n- Budget Range: \n- Technology Requirements: \n\nBest regards,\n[Your Name]\n[Your Company]\n[Your Contact]`)}`}
