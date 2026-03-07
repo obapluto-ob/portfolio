@@ -6,8 +6,8 @@ const TechnicalBlog = () => {
   
   if (!hasRealWriting) {
     return (
-      <div className="bg-slate-800/30 rounded-lg p-6 border border-slate-700">
-        <h3 className="text-xl font-medium text-slate-200 mb-6">Technical Writing</h3>
+      <div className="glass rounded-2xl p-6 glow-hover">
+        <h3 className="text-2xl font-semibold text-slate-200 mb-6">Technical Writing</h3>
         <div className="py-6">
           <p className="text-slate-300 mb-6 text-center">Currently focused on building projects</p>
           <p className="text-slate-400 mb-6 text-center">
@@ -54,8 +54,8 @@ const TechnicalBlog = () => {
 
   // This section will show when you have real articles
   return (
-    <div className="bg-slate-800/30 rounded-lg p-6 border border-slate-700">
-      <h3 className="text-xl font-medium text-slate-200 mb-6">Technical Writing</h3>
+    <div className="glass rounded-2xl p-6 glow-hover">
+      <h3 className="text-2xl font-semibold text-slate-200 mb-6">Technical Writing</h3>
       {/* Real articles will go here when available */}
     </div>
   )

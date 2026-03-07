@@ -4,7 +4,6 @@ import SectionHeader from './SectionHeader'
 import LazyImage from './LazyImage'
 import ContactForm from './ContactForm'
 import ResumeDownload from './ResumeDownload'
-import Testimonials from './Testimonials'
 import SocialLinks from './SocialLinks'
 import analytics from '../utils/analytics'
 
@@ -51,8 +50,8 @@ const AboutEnhanced = () => {
       <SectionHeader title="About Me" className="mb-8" />
       
       {readme ? (
-        <div className="bg-slate-800/30 rounded-lg p-8 border border-slate-700">
-          <div className="text-left text-slate-400 space-y-4">
+        <div className="glass rounded-2xl p-8 glow">
+          <div className="text-left text-slate-300 space-y-4">
             {readme.split('\n').map((line, index) => {
               if (line.includes('<img') || line.includes('<p align') || line.includes('</p>') || line.includes('<h1') || line.includes('</h1>') || line.includes('<h3') || line.includes('</h3>')) {
                 return null
@@ -96,7 +95,7 @@ const AboutEnhanced = () => {
           </div>
         </div>
       ) : (
-        <div className="bg-slate-800/30 rounded-lg p-8 border border-slate-700 text-center">
+        <div className="glass rounded-2xl p-8 text-center glow">
           <h3 className="text-xl font-medium text-slate-200 mb-4">My Journey</h3>
           <p className="text-slate-400 leading-relaxed">
             Currently pursuing Full-stack Development at Moringa School in Nairobi. 
@@ -121,22 +120,15 @@ const AboutEnhanced = () => {
         </a>
       </div>
       
-      <div className="mt-16 border-t border-slate-700 pt-12">
-        <SectionHeader title="Let's Work Together" />
-        
-        <div className="mb-12">
-          <p className="text-xl text-slate-300 mb-4 text-center">
-            Ready to bring your ideas to life?
-          </p>
-          <p className="text-slate-400 max-w-2xl mx-auto text-center">
-            I'm available for freelance projects, full-time opportunities, and collaborations. 
-            Let's discuss how we can build something amazing together.
-          </p>
+      <div className="mt-16 border-t border-slate-700/50 pt-12">
+        <div className="mb-16 text-center">
+          <h2 className="text-5xl font-bold mb-4 gradient-text" style={{fontFamily: 'Space Grotesk, sans-serif'}}>Let's Work Together</h2>
+          <p className="text-slate-400 text-lg">Ready to bring your ideas to life</p>
         </div>
 
         <div className="grid md:grid-cols-2 gap-8 mb-12">
-          <div className="bg-slate-800/30 rounded-lg p-8 border border-slate-700">
-            <h3 className="text-xl font-medium text-slate-200 mb-6">Get In Touch</h3>
+          <div className="glass rounded-2xl p-8 glow-hover">
+            <h3 className="text-2xl font-semibold text-slate-200 mb-6">Get In Touch</h3>
             <div className="space-y-4">
               <ResumeDownload />
               
@@ -148,7 +140,7 @@ const AboutEnhanced = () => {
               <a 
                 href={`mailto:${personalInfo.email}?subject=${encodeURIComponent("Hiring Inquiry - Full-stack Developer Position")}&body=${encodeURIComponent(`Hi Obed,\n\nI came across your portfolio and I'm impressed with your work. I would like to discuss potential opportunities for:\n\n□ Full-stack Web Development\n□ Mobile App Development\n□ Project Collaboration\n□ Other: ___________\n\nProject Details:\n- Timeline: \n- Budget Range: \n- Technology Requirements: \n\nBest regards,\n[Your Name]\n[Your Company]\n[Your Contact]`)}`}
                 onClick={() => analytics.trackClick('contact_email', 'contact')}
-                className="flex items-center space-x-3 p-4 bg-blue-600 hover:bg-blue-700 rounded-lg transition-all group w-full"
+                className="flex items-center space-x-3 p-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-xl transition-all hover:scale-105 group w-full"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
@@ -162,7 +154,7 @@ const AboutEnhanced = () => {
               <a 
                 href="tel:+254729237059"
                 onClick={() => analytics.trackClick('contact_phone', 'contact')}
-                className="flex items-center space-x-3 p-4 border border-slate-600 hover:border-slate-500 hover:bg-slate-800 rounded-lg transition-all w-full"
+                className="flex items-center space-x-3 p-4 glass hover:bg-slate-700/50 rounded-xl transition-all hover:scale-105 w-full border border-slate-600"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
@@ -176,10 +168,6 @@ const AboutEnhanced = () => {
           </div>
 
           <ContactForm />
-        </div>
-        
-        <div className="mb-12">
-          <Testimonials />
         </div>
 
         <div className="text-center mb-20">

@@ -194,18 +194,21 @@ const Engagement = () => {
 
   return (
     <div className="max-w-4xl mx-auto">
-      <SectionHeader title="Engage & Connect" />
+      <div className="mb-16 text-center">
+        <h2 className="text-5xl font-bold mb-4 gradient-text" style={{fontFamily: 'Space Grotesk, sans-serif'}}>Engage & Connect</h2>
+        <p className="text-slate-400 text-lg">Rate, share, and leave your thoughts</p>
+      </div>
       
       <div className="grid md:grid-cols-2 gap-8 mb-8">
         {/* Portfolio Rating */}
-        <div className="bg-slate-800/30 rounded-lg p-6 border border-slate-700 text-center">
-          <h3 className="text-xl font-medium text-slate-200 mb-4">Rate This Portfolio</h3>
+        <div className="glass rounded-2xl p-6 text-center glow-hover">
+          <h3 className="text-2xl font-semibold text-slate-200 mb-4">Rate This Portfolio</h3>
           
           {/* Average Rating Display */}
           {totalRatings > 0 && (
             <div className="mb-4">
               <div className="text-3xl font-bold text-yellow-400 mb-1">
-                {averageRating.toFixed(1)} ⭐
+                {averageRating.toFixed(1)}
               </div>
               <div className="text-sm text-slate-400">
                 Based on {totalRatings} rating{totalRatings !== 1 ? 's' : ''}
@@ -244,27 +247,29 @@ const Engagement = () => {
                   star <= rating ? 'text-yellow-400' : 'text-slate-600'
                 } ${!hasRated ? 'hover:text-yellow-300' : 'cursor-default'}`}
               >
-                ⭐
+                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                </svg>
               </button>
             ))}
           </div>
           
           {hasRated ? (
-            <div className="text-green-400">Thanks for rating! 🌟</div>
+            <div className="text-green-400">Thanks for rating!</div>
           ) : (
             <div className="text-slate-400 text-sm">Click to rate</div>
           )}
         </div>
 
         {/* Share Portfolio */}
-        <div className="bg-slate-800/30 rounded-lg p-6 border border-slate-700">
-          <h3 className="text-xl font-medium text-slate-200 mb-4 text-center">Share Portfolio</h3>
+        <div className="glass rounded-2xl p-6 glow-hover">
+          <h3 className="text-2xl font-semibold text-slate-200 mb-4 text-center">Share Portfolio</h3>
           <div className="space-y-3">
             <a
               href={`https://twitter.com/intent/tweet?text=Check out this amazing developer portfolio!&url=${window.location.href}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-center space-x-2 bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded transition-colors"
+              className="flex items-center justify-center space-x-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 px-4 py-3 rounded-xl transition-all hover:scale-105 font-medium"
             >
               <span>Share on Twitter</span>
             </a>
@@ -272,13 +277,13 @@ const Engagement = () => {
               href={`https://www.linkedin.com/sharing/share-offsite/?url=${window.location.href}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-center space-x-2 bg-blue-700 hover:bg-blue-800 px-4 py-2 rounded transition-colors"
+              className="flex items-center justify-center space-x-2 bg-gradient-to-r from-blue-700 to-blue-800 hover:from-blue-800 hover:to-blue-900 px-4 py-3 rounded-xl transition-all hover:scale-105 font-medium"
             >
               <span>Share on LinkedIn</span>
             </a>
             <button
               onClick={copyPortfolioLink}
-              className="w-full bg-slate-600 hover:bg-slate-700 px-4 py-2 rounded transition-colors"
+              className="w-full glass hover:bg-slate-700/50 px-4 py-3 rounded-xl transition-all hover:scale-105 font-medium border border-slate-600"
             >
               Copy Portfolio Link
             </button>
@@ -287,21 +292,21 @@ const Engagement = () => {
       </div>
       
       {/* Quick Guestbook */}
-      <div className="bg-slate-800/30 rounded-lg p-6 border border-slate-700">
-        <h3 className="text-xl font-medium text-slate-200 mb-4">Leave a Message</h3>
+      <div className="glass rounded-2xl p-6 glow">
+        <h3 className="text-2xl font-semibold text-slate-200 mb-4">Leave a Message</h3>
         <div className="flex space-x-3 mb-4">
           <input
             type="text"
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             placeholder="Leave a quick message..."
-            className="flex-1 bg-slate-700 border border-slate-600 rounded px-3 py-2 text-white placeholder-slate-400"
+            className="flex-1 glass border-slate-600 rounded-xl px-4 py-3 text-white placeholder-slate-400 focus:border-blue-500 focus:outline-none"
             onKeyPress={(e) => e.key === 'Enter' && addMessage()}
           />
           <button
             onClick={addMessage}
             disabled={loading}
-            className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 px-4 py-2 rounded transition-colors"
+            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 px-6 py-3 rounded-xl transition-all hover:scale-105 font-medium"
           >
             {loading ? 'Adding...' : 'Add'}
           </button>
@@ -311,27 +316,40 @@ const Engagement = () => {
           <div className="space-y-3">
             <h4 className="text-slate-300 font-medium">Recent Messages:</h4>
             {messages.map((msg) => (
-              <div key={msg.id} className="bg-slate-700/50 p-4 rounded">
+              <div key={msg.id} className="glass rounded-xl p-4 card-hover">
                 <div className="text-slate-300 mb-2">{msg.text}</div>
                 
                 {/* Reactions */}
                 <div className="flex items-center space-x-2">
                   <div className="flex space-x-1">
-                    {['👍', '❤️', '😊', '🔥'].map(emoji => {
-                      const isUserReaction = userReactions[msg.id] === emoji
+                    {[
+                      { name: 'like', icon: '👍' },
+                      { name: 'heart', icon: '❤️' },
+                      { name: 'smile', icon: '😊' },
+                      { name: 'fire', icon: '🔥' }
+                    ].map(reaction => {
+                      const isUserReaction = userReactions[msg.id] === reaction.icon
                       return (
                         <button
-                          key={emoji}
-                          onClick={() => addReaction(msg.id, emoji)}
+                          key={reaction.name}
+                          onClick={() => addReaction(msg.id, reaction.icon)}
                           className={`flex items-center space-x-1 px-2 py-1 rounded text-xs transition-colors ${
                             isUserReaction 
                               ? 'bg-blue-600 hover:bg-blue-700' 
                               : 'bg-slate-600 hover:bg-slate-500'
                           }`}
                         >
-                          <span>{emoji}</span>
+                          <img 
+                            src={`https://cdn.jsdelivr.net/npm/emoji-datasource-apple/img/apple/64/${reaction.name === 'like' ? '1f44d' : reaction.name === 'heart' ? '2764-fe0f' : reaction.name === 'smile' ? '1f60a' : '1f525'}.png`}
+                            alt={reaction.name}
+                            className="w-4 h-4"
+                            onError={(e) => {
+                              e.currentTarget.style.display = 'none'
+                              e.currentTarget.nextElementSibling.textContent = reaction.icon
+                            }}
+                          />
                           <span className="text-slate-300">
-                            {msg.reactions?.[emoji] || 0}
+                            {msg.reactions?.[reaction.icon] || 0}
                           </span>
                         </button>
                       )

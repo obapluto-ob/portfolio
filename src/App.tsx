@@ -5,8 +5,7 @@ import Skills from './components/Skills'
 import Projects from './components/Projects'
 import Professional from './components/Professional'
 import EngagementNew from './components/EngagementNew'
-import Testimonials from './components/Testimonials'
-import TechnicalBlog from './components/TechnicalBlog'
+import Sponsor from './components/Sponsor'
 import ErrorBoundary from './components/ErrorBoundary'
 import ScrollProgress from './components/ScrollProgress'
 import BackToTop from './components/BackToTop'
@@ -27,9 +26,8 @@ const pages: PageConfig[] = [
   { component: Skills, name: 'Skills', scrollable: true },
   { component: Projects, name: 'Projects', scrollable: true },
   { component: Professional, name: 'Professional', scrollable: true },
-  { component: Testimonials, name: 'Testimonials', scrollable: true },
-  { component: TechnicalBlog, name: 'Blog', scrollable: true },
   { component: EngagementNew, name: 'Engage', scrollable: true },
+  { component: Sponsor, name: 'Sponsor', scrollable: true },
   { component: AboutEnhanced, name: 'About & Contact', scrollable: true }
 ]
 
@@ -98,7 +96,7 @@ function App() {
   }
 
   return (
-    <div className="h-screen bg-slate-900 text-white relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white relative overflow-hidden">
       <ScrollProgress currentPage={currentPage} totalPages={pages.length} />
       {/* Skip to content link for accessibility */}
       <a 

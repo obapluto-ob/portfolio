@@ -70,46 +70,49 @@ const Projects = () => {
 
   return (
     <div className="text-center max-w-3xl mx-auto">
-      <SectionHeader title="My Work" className="mb-8" />
+      <SectionHeader title="My Work" className="mb-12" />
       
       {githubData && (
-        <div className="bg-slate-800/30 rounded-lg p-8 border border-slate-700">
+        <div className="glass rounded-2xl p-8 mb-12 glow">
           <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-6 mb-8">
-            <img 
-              src={githubData.avatar_url}
-              alt="GitHub Avatar"
-              className="w-20 h-20 sm:w-24 sm:h-24 rounded-full"
-            />
+            <div className="relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full blur-lg opacity-50"></div>
+              <img 
+                src={githubData.avatar_url}
+                alt="GitHub Avatar"
+                className="relative w-24 h-24 rounded-full border-2 border-slate-600"
+              />
+            </div>
             <div className="text-center sm:text-left">
-              <h3 className="text-xl sm:text-2xl font-medium text-slate-200">{githubData.name || githubData.login}</h3>
-              <p className="text-slate-400 text-base sm:text-lg">@{githubData.login}</p>
-              {githubData.bio && <p className="text-slate-500 mt-2 text-sm sm:text-base">{githubData.bio}</p>}
+              <h3 className="text-2xl font-bold text-slate-200">{githubData.name || githubData.login}</h3>
+              <p className="text-slate-400 text-lg">@{githubData.login}</p>
+              {githubData.bio && <p className="text-slate-500 mt-2">{githubData.bio}</p>}
             </div>
           </div>
           
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 mb-8">
-            <div className="text-center">
-              <div className="text-2xl sm:text-3xl font-light text-blue-400">{githubData.public_repos}</div>
-              <div className="text-xs sm:text-sm text-slate-500">Repositories</div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 mb-8">
+            <div className="text-center glass rounded-xl p-4">
+              <div className="text-3xl font-bold text-blue-400">{githubData.public_repos}</div>
+              <div className="text-sm text-slate-400">Repositories</div>
             </div>
-            <div className="text-center">
-              <div className="text-2xl sm:text-3xl font-light text-blue-400">{githubData.followers}</div>
-              <div className="text-xs sm:text-sm text-slate-500">Followers</div>
+            <div className="text-center glass rounded-xl p-4">
+              <div className="text-3xl font-bold text-purple-400">{githubData.followers}</div>
+              <div className="text-sm text-slate-400">Followers</div>
             </div>
-            <div className="text-center">
-              <div className="text-2xl sm:text-3xl font-light text-blue-400">{githubData.following}</div>
-              <div className="text-xs sm:text-sm text-slate-500">Following</div>
+            <div className="text-center glass rounded-xl p-4">
+              <div className="text-3xl font-bold text-pink-400">{githubData.following}</div>
+              <div className="text-sm text-slate-400">Following</div>
             </div>
-            <div className="text-center">
-              <div className="text-2xl sm:text-3xl font-light text-blue-400">
+            <div className="text-center glass rounded-xl p-4">
+              <div className="text-3xl font-bold text-green-400">
                 {new Date(githubData.created_at).getFullYear()}
               </div>
-              <div className="text-xs sm:text-sm text-slate-500">Joined</div>
+              <div className="text-sm text-slate-400">Joined</div>
             </div>
           </div>
           
           <div className="space-y-4">
-            <p className="text-slate-400">
+            <p className="text-slate-300 text-lg">
               Explore my repositories, contributions, and coding journey on GitHub.
             </p>
             
@@ -117,13 +120,12 @@ const Projects = () => {
               href={`${githubData.html_url}?tab=repositories`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center space-x-2 sm:space-x-3 bg-blue-600 hover:bg-blue-700 px-4 sm:px-8 py-3 sm:py-4 rounded-lg transition-all hover:scale-105 text-base sm:text-lg font-medium"
+              className="inline-flex items-center space-x-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 px-8 py-4 rounded-xl transition-all hover:scale-105 text-lg font-semibold shadow-lg glow-hover"
             >
               <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10 0C4.477 0 0 4.484 0 10.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0110 4.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.203 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.942.359.31.678.921.678 1.856 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0020 10.017C20 4.484 15.522 0 10 0z" clipRule="evenodd" />
               </svg>
-              <span className="hidden sm:inline">View All Repositories</span>
-              <span className="sm:hidden">View Repos</span>
+              <span>View All Repositories</span>
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
               </svg>
@@ -134,12 +136,17 @@ const Projects = () => {
       
       {/* Featured Projects */}
       <div className="mt-12">
-        <h3 className="text-xl sm:text-2xl font-medium text-slate-200 mb-6">Featured Projects</h3>
+        <h3 className="text-3xl font-bold text-slate-200 mb-8 flex items-center justify-center gap-3">
+          <span className="w-12 h-0.5 bg-gradient-to-r from-transparent to-blue-500"></span>
+          Featured Projects
+          <span className="w-12 h-0.5 bg-gradient-to-l from-transparent to-blue-500"></span>
+        </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           
           {/* StopWatch Pro */}
-          <div className="bg-slate-800/50 rounded-lg border border-slate-600 overflow-hidden hover:border-blue-500 transition-colors">
-            <div className="aspect-video bg-slate-700 overflow-hidden">
+          <div className="glass rounded-2xl overflow-hidden card-hover glow-hover group">
+            <div className="aspect-video bg-gradient-to-br from-blue-900/50 to-slate-900 overflow-hidden relative">
+              <div className="absolute inset-0 bg-blue-500/10 group-hover:bg-blue-500/20 transition-colors"></div>
               <iframe 
                 src="https://phase-1-stop-watch-applictation.vercel.app/" 
                 className="w-full h-full border-0 scale-75 origin-top-left" 
@@ -147,20 +154,20 @@ const Projects = () => {
                 title="StopWatch Pro Preview"
               />
             </div>
-            <div className="p-4">
-              <h4 className="font-medium text-slate-200 mb-2">StopWatch Pro</h4>
-              <p className="text-sm text-slate-400 mb-3">Professional stopwatch with lap timing and export features</p>
-              <div className="flex flex-wrap gap-2 mb-3">
-                <span className="px-2 py-1 bg-blue-600/20 text-blue-400 text-xs rounded">React</span>
-                <span className="px-2 py-1 bg-green-600/20 text-green-400 text-xs rounded">TypeScript</span>
+            <div className="p-6">
+              <h4 className="font-bold text-xl text-slate-200 mb-2 group-hover:text-blue-400 transition-colors">StopWatch Pro</h4>
+              <p className="text-slate-400 mb-4">Professional stopwatch with lap timing and export features</p>
+              <div className="flex flex-wrap gap-2 mb-4">
+                <span className="px-3 py-1 bg-blue-600/30 text-blue-300 text-xs rounded-full font-medium">React</span>
+                <span className="px-3 py-1 bg-green-600/30 text-green-300 text-xs rounded-full font-medium">TypeScript</span>
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-3">
                 <a href="https://phase-1-stop-watch-applictation.vercel.app/" target="_blank" rel="noopener noreferrer" 
-                   className="flex-1 bg-blue-600 hover:bg-blue-700 text-center py-2 rounded text-sm transition-colors">
+                   className="flex-1 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-center py-2.5 rounded-lg font-medium transition-all hover:scale-105">
                   Live Demo
                 </a>
                 <a href="https://github.com/obapluto-ob/StopWatch-Pro" target="_blank" rel="noopener noreferrer" 
-                   className="flex-1 bg-slate-700 hover:bg-slate-600 text-center py-2 rounded text-sm transition-colors">
+                   className="flex-1 glass hover:bg-slate-700/50 text-center py-2.5 rounded-lg font-medium transition-all border border-slate-600">
                   Code
                 </a>
               </div>
@@ -168,8 +175,9 @@ const Projects = () => {
           </div>
 
           {/* Ludomania */}
-          <div className="bg-slate-800/50 rounded-lg border border-slate-600 overflow-hidden hover:border-green-500 transition-colors">
-            <div className="aspect-video bg-slate-700 overflow-hidden">
+          <div className="glass rounded-2xl overflow-hidden card-hover glow-hover group">
+            <div className="aspect-video bg-gradient-to-br from-green-900/50 to-slate-900 overflow-hidden relative">
+              <div className="absolute inset-0 bg-green-500/10 group-hover:bg-green-500/20 transition-colors"></div>
               <iframe 
                 src="https://ludomania-iota.vercel.app" 
                 className="w-full h-full border-0 scale-75 origin-top-left" 
@@ -177,20 +185,20 @@ const Projects = () => {
                 title="Ludomania Preview"
               />
             </div>
-            <div className="p-4">
-              <h4 className="font-medium text-slate-200 mb-2">Ludomania</h4>
-              <p className="text-sm text-slate-400 mb-3">Interactive gaming platform with multiple game modes</p>
-              <div className="flex flex-wrap gap-2 mb-3">
-                <span className="px-2 py-1 bg-green-600/20 text-green-400 text-xs rounded">JavaScript</span>
-                <span className="px-2 py-1 bg-purple-600/20 text-purple-400 text-xs rounded">CSS3</span>
+            <div className="p-6">
+              <h4 className="font-bold text-xl text-slate-200 mb-2 group-hover:text-green-400 transition-colors">Ludomania</h4>
+              <p className="text-slate-400 mb-4">Interactive gaming platform with multiple game modes</p>
+              <div className="flex flex-wrap gap-2 mb-4">
+                <span className="px-3 py-1 bg-green-600/30 text-green-300 text-xs rounded-full font-medium">JavaScript</span>
+                <span className="px-3 py-1 bg-purple-600/30 text-purple-300 text-xs rounded-full font-medium">CSS3</span>
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-3">
                 <a href="https://ludomania-iota.vercel.app" target="_blank" rel="noopener noreferrer" 
-                   className="flex-1 bg-green-600 hover:bg-green-700 text-center py-2 rounded text-sm transition-colors">
+                   className="flex-1 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-center py-2.5 rounded-lg font-medium transition-all hover:scale-105">
                   Live Demo
                 </a>
                 <a href="https://github.com/obapluto-ob/Ludomania" target="_blank" rel="noopener noreferrer" 
-                   className="flex-1 bg-slate-700 hover:bg-slate-600 text-center py-2 rounded text-sm transition-colors">
+                   className="flex-1 glass hover:bg-slate-700/50 text-center py-2.5 rounded-lg font-medium transition-all border border-slate-600">
                   Code
                 </a>
               </div>
@@ -198,8 +206,9 @@ const Projects = () => {
           </div>
 
           {/* BPay App */}
-          <div className="bg-slate-800/50 rounded-lg border border-slate-600 overflow-hidden hover:border-yellow-500 transition-colors">
-            <div className="aspect-video bg-slate-700 overflow-hidden">
+          <div className="glass rounded-2xl overflow-hidden card-hover glow-hover group">
+            <div className="aspect-video bg-gradient-to-br from-yellow-900/50 to-slate-900 overflow-hidden relative">
+              <div className="absolute inset-0 bg-yellow-500/10 group-hover:bg-yellow-500/20 transition-colors"></div>
               <iframe 
                 src="https://bpayapp.co.ke" 
                 className="w-full h-full border-0 scale-75 origin-top-left" 
@@ -207,20 +216,20 @@ const Projects = () => {
                 title="BPay App Preview"
               />
             </div>
-            <div className="p-4">
-              <h4 className="font-medium text-slate-200 mb-2">BPay App</h4>
-              <p className="text-sm text-slate-400 mb-3">Modern payment solution platform with secure transactions</p>
-              <div className="flex flex-wrap gap-2 mb-3">
-                <span className="px-2 py-1 bg-yellow-600/20 text-yellow-400 text-xs rounded">React</span>
-                <span className="px-2 py-1 bg-blue-600/20 text-blue-400 text-xs rounded">Node.js</span>
+            <div className="p-6">
+              <h4 className="font-bold text-xl text-slate-200 mb-2 group-hover:text-yellow-400 transition-colors">BPay App</h4>
+              <p className="text-slate-400 mb-4">Modern payment solution platform with secure transactions</p>
+              <div className="flex flex-wrap gap-2 mb-4">
+                <span className="px-3 py-1 bg-yellow-600/30 text-yellow-300 text-xs rounded-full font-medium">React</span>
+                <span className="px-3 py-1 bg-blue-600/30 text-blue-300 text-xs rounded-full font-medium">Node.js</span>
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-3">
                 <a href="https://bpayapp.co.ke" target="_blank" rel="noopener noreferrer" 
-                   className="flex-1 bg-yellow-600 hover:bg-yellow-700 text-center py-2 rounded text-sm transition-colors">
+                   className="flex-1 bg-gradient-to-r from-yellow-600 to-yellow-700 hover:from-yellow-700 hover:to-yellow-800 text-center py-2.5 rounded-lg font-medium transition-all hover:scale-105">
                   Live Demo
                 </a>
                 <a href="https://github.com/obapluto-ob/bpay-app" target="_blank" rel="noopener noreferrer" 
-                   className="flex-1 bg-slate-700 hover:bg-slate-600 text-center py-2 rounded text-sm transition-colors">
+                   className="flex-1 glass hover:bg-slate-700/50 text-center py-2.5 rounded-lg font-medium transition-all border border-slate-600">
                   Code
                 </a>
               </div>

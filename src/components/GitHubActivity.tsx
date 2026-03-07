@@ -81,8 +81,8 @@ const GitHubActivity = () => {
 
   if (loading) {
     return (
-      <div className="bg-slate-800/30 rounded-lg p-6 border border-slate-700">
-        <h3 className="text-lg font-medium text-slate-200 mb-4">Recent Activity</h3>
+      <div className="glass rounded-2xl p-6 glow-hover">
+        <h3 className="text-xl font-semibold text-slate-200 mb-4">Recent Activity</h3>
         <div className="animate-pulse space-y-3">
           {[1,2,3].map(i => (
             <div key={i} className="h-4 bg-slate-700 rounded"></div>
@@ -93,8 +93,8 @@ const GitHubActivity = () => {
   }
 
   return (
-    <div className="bg-slate-800/30 rounded-lg p-6 border border-slate-700">
-      <h3 className="text-lg font-medium text-slate-200 mb-4">Recent Activity</h3>
+    <div className="glass rounded-2xl p-6 glow-hover">
+      <h3 className="text-xl font-semibold text-slate-200 mb-4">Recent Activity</h3>
       <div className="space-y-3">
         {events.slice(0, 4).map((event) => (
           <div key={event.id} className="flex items-start space-x-3 text-sm">
