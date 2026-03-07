@@ -135,13 +135,13 @@ const Projects = () => {
       )}
       
       {/* Featured Projects */}
-      <div className="mt-12">
+      <div className="mt-12 overflow-hidden">
         <h3 className="text-3xl font-bold text-slate-200 mb-8 flex items-center justify-center gap-3">
           <span className="w-12 h-0.5 bg-gradient-to-r from-transparent to-blue-500"></span>
           Featured Projects
           <span className="w-12 h-0.5 bg-gradient-to-l from-transparent to-blue-500"></span>
         </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl mx-auto">
           
           {/* StopWatch Pro */}
           <div className="glass rounded-2xl overflow-hidden card-hover glow-hover group">
