@@ -235,6 +235,37 @@ const Projects = () => {
               </div>
             </div>
           </div>
+
+          {/* WeGatSauce Fashion */}
+          <div className="glass rounded-2xl overflow-hidden card-hover glow-hover group">
+            <div className="aspect-video bg-gradient-to-br from-pink-900/50 to-slate-900 overflow-hidden relative">
+              <div className="absolute inset-0 bg-pink-500/10 group-hover:bg-pink-500/20 transition-colors"></div>
+              <iframe 
+                src="https://wegatsauce.pythonanywhere.com" 
+                className="w-full h-full border-0 scale-75 origin-top-left" 
+                style={{width: '133.33%', height: '133.33%'}}
+                title="WeGatSauce Fashion Preview"
+              />
+            </div>
+            <div className="p-6">
+              <h4 className="font-bold text-xl text-slate-200 mb-2 group-hover:text-pink-400 transition-colors">WeGatSauce Fashion</h4>
+              <p className="text-slate-400 mb-4">E-commerce fashion platform with modern shopping experience</p>
+              <div className="flex flex-wrap gap-2 mb-4">
+                <span className="px-3 py-1 bg-pink-600/30 text-pink-300 text-xs rounded-full font-medium">Django</span>
+                <span className="px-3 py-1 bg-orange-600/30 text-orange-300 text-xs rounded-full font-medium">Python</span>
+              </div>
+              <div className="flex gap-3">
+                <a href="https://wegatsauce.pythonanywhere.com" target="_blank" rel="noopener noreferrer" 
+                   className="flex-1 bg-gradient-to-r from-pink-600 to-pink-700 hover:from-pink-700 hover:to-pink-800 text-center py-2.5 rounded-lg font-medium transition-all hover:scale-105">
+                  Live Demo
+                </a>
+                <a href="https://github.com/obapluto-ob/wegatsauce-fashion" target="_blank" rel="noopener noreferrer" 
+                   className="flex-1 glass hover:bg-slate-700/50 text-center py-2.5 rounded-lg font-medium transition-all border border-slate-600">
+                  Code
+                </a>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
