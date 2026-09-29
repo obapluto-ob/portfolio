@@ -453,7 +453,13 @@ export const ReconSandbox = ({ challenge, onCorrect, solved }: SandboxProps) => 
         setLines(p => [...p, { text: '✗ Wrong answer. Keep digging.' }])
       }
     } else {
-      setLines(p => [...p, { text: `Command not found: ${c}. Type "help".` }])
+      // try raw input as a direct answer
+      const ans = c.trim()
+      if (onCorrectRef.current(ans)) {
+        setLines(p => [...p, { text: `✓ CORRECT! Flag: CTF{${isPortscan ? 'nmap_port_22_ssh' : 'osint_recon_complete'}}`, green: true }])
+      } else {
+        setLines(p => [...p, { text: `Command not found: ${c}. Type "help" or: submit <answer>` }])
+      }
     }
     setCmd('')
   }
