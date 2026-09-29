@@ -405,6 +405,7 @@ const RedTeamCTF = () => {
   const [celebration, setCelebration] = useState<{ title: string; pts: number; next: ChallengeId | null } | null>(null)
   const [showDebrief, setShowDebrief] = useState(false)
   const [debriefRank, setDebriefRank] = useState<number | null>(null)
+  const [confirmRetake, setConfirmRetake] = useState(false)
 
   // Auto-login + sync to Firestore
   useEffect(() => {
@@ -797,6 +798,11 @@ const RedTeamCTF = () => {
             style={{ border: '1px solid var(--border)', color: showLeader ? 'var(--green)' : 'var(--text-muted)', background: showLeader ? 'rgba(0,255,65,0.08)' : 'transparent' }}>
             LEADERBOARD
           </button>
+          <button onClick={() => setConfirmRetake(true)}
+            className="text-xs px-2 py-1.5 rounded"
+            style={{ border: '1px solid var(--border)', color: 'var(--text-muted)', background: 'transparent' }}>
+            RETAKE
+          </button>
           <button onClick={() => { localStorage.removeItem(LS_KEY); setOperator(null) }}
             className="text-xs px-2 py-1.5 rounded"
             style={{ border: '1px solid var(--border)', color: 'var(--text-muted)', background: 'transparent' }}>
@@ -804,6 +810,46 @@ const RedTeamCTF = () => {
           </button>
         </div>
       </div>
+
+      {/* Reset confirm modal */}
+      {confirmRetake && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center font-mono" style={{ background: 'rgba(0,0,0,0.85)' }}>
+          <div className="rounded-lg p-6 max-w-sm w-full mx-4 space-y-4" style={{ background: 'rgba(0,12,0,0.98)', border: '1px solid #ff5f57', boxShadow: '0 0 40px rgba(255,95,87,0.2)' }}>
+            <div className="text-sm font-bold" style={{ color: '#ff5f57' }}>[ WARNING ] RETAKE MISSION</div>
+            <div className="text-xs space-y-1" style={{ color: 'var(--text-dim)' }}>
+              <div>This will reset:</div>
+              <div style={{ color: '#ff5f57' }}>  — all solved challenges</div>
+              <div style={{ color: '#ff5f57' }}>  — your score ({operator.score} pts)</div>
+              <div style={{ color: '#ff5f57' }}>  — all hints used</div>
+              <div className="mt-2" style={{ color: 'var(--text-muted)' }}>Your callsign <span style={{ color: 'var(--cyan)' }}>op://{operator.callsign}</span> is kept.</div>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={async () => {
+                  const fresh: Operator = { ...operator, solved: [], score: 0, hintsUsed: {}, lastSeen: Date.now() }
+                  await saveOperator(fresh)
+                  setSelected(null)
+                  setAttempts({})
+                  setCooldowns({})
+                  setUnlockedHints({})
+                  setFeedback(null)
+                  setShowDebrief(false)
+                  setConfirmRetake(false)
+                }}
+                className="flex-1 py-2 rounded font-bold text-xs transition-all hover:scale-[1.02]"
+                style={{ background: '#ff5f57', color: '#000' }}>
+                CONFIRM RETAKE
+              </button>
+              <button
+                onClick={() => setConfirmRetake(false)}
+                className="flex-1 py-2 rounded font-bold text-xs transition-all hover:scale-[1.02]"
+                style={{ border: '1px solid var(--border)', color: 'var(--text-muted)', background: 'transparent' }}>
+                CANCEL
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Progress bar */}
       <div className="hack-progress h-1 w-full mb-4 rounded">
