@@ -90,184 +90,245 @@ export const LoginSandbox = ({ onCorrect, solved }: SandboxProps) => {
   )
 }
 
-// ── Terminal Sandbox (cipher) ──────────────────────────────────────────────
+// ── Terminal Sandbox — REAL xterm.js terminal ────────────────────────────
 export const TerminalSandbox = ({ onCorrect, solved }: SandboxProps) => {
-  const [input, setInput] = useState('')
-  const [lines, setLines] = useState<{ text: string; type: 'cmd' | 'out' | 'err' | 'ok' }[]>([
-    { text: 'Cipher Decoder v1.0 — type "help" for commands', type: 'out' },
-    { text: 'Intercepted: "KDOO KDOO WKH KDFTHU"', type: 'out' },
-    { text: 'Shift: 3 | Mode: decrypt', type: 'out' },
-  ])
-  const [history, setHistory] = useState<string[]>([])
-  const [histIdx, setHistIdx] = useState(-1)
-  const inputRef = useRef<HTMLInputElement>(null)
-  const logRef = useRef<HTMLDivElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const termRef = useRef<import('@xterm/xterm').Terminal | null>(null)
+  const fitRef = useRef<import('@xterm/addon-fit').FitAddon | null>(null)
+  const lineRef = useRef('')
+  const historyRef = useRef<string[]>([])
+  const histIdxRef = useRef(-1)
   const onCorrectRef = useRef(onCorrect)
   useEffect(() => { onCorrectRef.current = onCorrect }, [onCorrect])
 
-  useEffect(() => {
-    if (logRef.current) logRef.current.scrollTop = logRef.current.scrollHeight
-  }, [lines])
-
   const caesarDecrypt = (text: string, shift: number) =>
-    text.toUpperCase().split('').map(c => {
-      if (c >= 'A' && c <= 'Z') return String.fromCharCode(((c.charCodeAt(0) - 65 - shift + 26) % 26) + 65)
-      return c
-    }).join('')
+    text.toUpperCase().split('').map(c =>
+      c >= 'A' && c <= 'Z' ? String.fromCharCode(((c.charCodeAt(0) - 65 - shift + 26) % 26) + 65) : c
+    ).join('')
 
-  const run = (cmd: string) => {
+  const prompt = (term: import('@xterm/xterm').Terminal) => term.write('\r\n\x1b[32m$\x1b[0m ')
+
+  const runCmd = (term: import('@xterm/xterm').Terminal, cmd: string) => {
     const c = cmd.trim().toLowerCase()
-    setLines(p => [...p, { text: `$ ${cmd}`, type: 'cmd' }])
-    setHistory(h => [cmd, ...h])
-    setHistIdx(-1)
-
+    term.write('\r\n')
+    if (!c) { prompt(term); return }
+    historyRef.current = [cmd, ...historyRef.current]
+    histIdxRef.current = -1
     if (c === 'help') {
-      setLines(p => [...p,
-        { text: 'decode <text> --shift <n>  Decrypt Caesar cipher', type: 'out' },
-        { text: 'submit <answer>            Submit decrypted text directly', type: 'out' },
-        { text: 'auto <text>                Try all 25 shifts', type: 'out' },
-        { text: 'clear                      Clear terminal', type: 'out' },
-      ])
+      term.write('\x1b[36mdecode <text> --shift <n>\x1b[0m  Decrypt Caesar cipher\r\n')
+      term.write('\x1b[36msubmit <answer>\x1b[0m            Submit answer\r\n')
+      term.write('\x1b[36mauto <text>\x1b[0m                Try all 25 shifts\r\n')
+      term.write('\x1b[36mclear\x1b[0m                      Clear terminal\r\n')
     } else if (c === 'clear') {
-      setLines([])
+      term.clear()
     } else if (c.startsWith('decode ')) {
       const parts = cmd.split('--shift')
       const text = parts[0].replace(/^decode /i, '').trim()
       const shift = parts[1] ? parseInt(parts[1].trim()) : 3
       const result = caesarDecrypt(text, isNaN(shift) ? 3 : shift)
-      setLines(p => [...p, { text: `Decrypted: ${result}`, type: 'out' }])
+      term.write(`\x1b[33mDecrypted:\x1b[0m ${result}\r\n`)
       if (onCorrectRef.current(result)) {
-        setLines(p => [...p, { text: '✓ FLAG CAPTURED: CTF{caesar_shift_3}', type: 'ok' }])
+        term.write('\x1b[32m\u2713 FLAG CAPTURED: CTF{caesar_shift_3}\x1b[0m\r\n')
       } else {
-        setLines(p => [...p, { text: '> If correct, use: submit ' + result, type: 'out' }])
+        term.write(`\x1b[2mHint: submit ${result}\x1b[0m\r\n`)
       }
     } else if (c.startsWith('submit ')) {
       const ans = cmd.replace(/^submit /i, '').trim()
       if (onCorrectRef.current(ans)) {
-        setLines(p => [...p, { text: '✓ FLAG CAPTURED: CTF{caesar_shift_3}', type: 'ok' }])
+        term.write('\x1b[32m\u2713 FLAG CAPTURED: CTF{caesar_shift_3}\x1b[0m\r\n')
       } else {
-        setLines(p => [...p, { text: '✗ Wrong answer. Try decoding first.', type: 'err' }])
+        term.write('\x1b[31m\u2717 Wrong answer.\x1b[0m\r\n')
       }
     } else if (c.startsWith('auto ')) {
       const text = cmd.replace(/^auto /i, '').trim()
       for (let s = 1; s <= 25; s++) {
-        setLines(p => [...p, { text: `shift ${String(s).padStart(2, '0')}: ${caesarDecrypt(text, s)}`, type: 'out' }])
+        term.write(`\x1b[2mshift ${String(s).padStart(2, '0')}:\x1b[0m ${caesarDecrypt(text, s)}\r\n`)
       }
     } else {
       if (onCorrectRef.current(cmd.trim())) {
-        setLines(p => [...p, { text: '✓ FLAG CAPTURED: CTF{caesar_shift_3}', type: 'ok' }])
+        term.write('\x1b[32m\u2713 FLAG CAPTURED: CTF{caesar_shift_3}\x1b[0m\r\n')
       } else {
-        setLines(p => [...p, { text: `Command not found: ${cmd}. Type "help" or use: submit <answer>`, type: 'err' }])
+        term.write(`\x1b[31mCommand not found: ${cmd}\x1b[0m  (type \x1b[36mhelp\x1b[0m)\r\n`)
       }
     }
-    setInput('')
+    prompt(term)
   }
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && input.trim()) { run(input); return }
-    // ArrowUp/Down: history navigation — prevent page scroll
-    if (e.key === 'ArrowUp') {
-      e.preventDefault()
-      const next = histIdx + 1
-      if (next < history.length) {
-        setHistIdx(next)
-        setInput(history[next])
-        // move cursor to end after state update
-        setTimeout(() => { const el = inputRef.current; if (el) { el.selectionStart = el.selectionEnd = el.value.length } }, 0)
-      }
-      return
-    }
-    if (e.key === 'ArrowDown') {
-      e.preventDefault()
-      const next = histIdx - 1
-      if (next < 0) { setHistIdx(-1); setInput('') }
-      else { setHistIdx(next); setInput(history[next]); setTimeout(() => { const el = inputRef.current; if (el) { el.selectionStart = el.selectionEnd = el.value.length } }, 0) }
-      return
-    }
-    // ArrowLeft/Right: let browser handle cursor movement naturally (default behaviour)
-  }
+  useEffect(() => {
+    if (!containerRef.current) return
+    let term: import('@xterm/xterm').Terminal
+    let fit: import('@xterm/addon-fit').FitAddon
+    Promise.all([
+      import('@xterm/xterm'),
+      import('@xterm/addon-fit'),
+      import('@xterm/xterm/css/xterm.css'),
+    ]).then(([{ Terminal }, { FitAddon }]) => {
+      term = new Terminal({
+        theme: { background: '#000d00', foreground: '#00ff41', cursor: '#00ff41', selectionBackground: 'rgba(0,255,65,0.3)' },
+        fontFamily: 'JetBrains Mono, monospace',
+        fontSize: 12,
+        cursorBlink: true,
+        convertEol: true,
+        rows: 12,
+      })
+      fit = new FitAddon()
+      term.loadAddon(fit)
+      term.open(containerRef.current!)
+      fit.fit()
+      termRef.current = term
+      fitRef.current = fit
+      term.write('\x1b[32mCipher Decoder v2.0\x1b[0m \u2014 type \x1b[36mhelp\x1b[0m\r\n')
+      term.write('\x1b[33mIntercepted:\x1b[0m "KDOO KDOO WKH KDFTHU"\r\n')
+      if (solved) { term.write('\x1b[32m\u2713 Already solved\x1b[0m\r\n'); return }
+      prompt(term)
+      term.onKey(({ key, domEvent: e }) => {
+        if (solved) return
+        if (e.key === 'Enter') {
+          const cmd = lineRef.current; lineRef.current = ''; runCmd(term, cmd)
+        } else if (e.key === 'Backspace') {
+          if (lineRef.current.length > 0) { lineRef.current = lineRef.current.slice(0, -1); term.write('\b \b') }
+        } else if (e.key === 'ArrowUp') {
+          const next = histIdxRef.current + 1
+          if (next < historyRef.current.length) {
+            histIdxRef.current = next; lineRef.current = historyRef.current[next]
+            term.write('\r\x1b[2K\x1b[32m$\x1b[0m ' + lineRef.current)
+          }
+        } else if (e.key === 'ArrowDown') {
+          const next = histIdxRef.current - 1
+          histIdxRef.current = Math.max(-1, next)
+          lineRef.current = next < 0 ? '' : historyRef.current[next]
+          term.write('\r\x1b[2K\x1b[32m$\x1b[0m ' + lineRef.current)
+        } else if (!e.ctrlKey && !e.altKey && key) {
+          lineRef.current += key; term.write(key)
+        }
+      })
+    })
+    const ro = new ResizeObserver(() => fitRef.current?.fit())
+    if (containerRef.current) ro.observe(containerRef.current)
+    return () => { ro.disconnect(); termRef.current?.dispose() }
+  }, [])
 
-  return (
-    <div className="rounded overflow-hidden" style={{ border: '1px solid var(--border)', background: 'rgba(0,0,0,0.7)' }}>
-      <div ref={logRef} className="p-3 text-xs font-mono space-y-0.5 overflow-y-auto" style={{ height: '180px' }}>
-        {lines.map((l, i) => (
-          <div key={i} style={{ color: l.type === 'cmd' ? 'var(--cyan)' : l.type === 'err' ? '#ff5f57' : l.type === 'ok' ? 'var(--green)' : 'var(--text-dim)' }}>
-            {l.text}
-          </div>
-        ))}
-      </div>
-      <div className="flex items-center gap-2 px-3 py-2" style={{ borderTop: '1px solid var(--border)' }}>
-        <span className="text-xs shrink-0" style={{ color: 'var(--green-dim)' }}>$</span>
-        <input ref={inputRef} value={input} onChange={e => setInput(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder='decode "KDOO KDOO WKH KDFTHU" --shift 3'
-          className="flex-1 bg-transparent text-xs outline-none font-mono min-w-0"
-          style={{ color: 'var(--green)' }}
-        />
-      </div>
-    </div>
-  )
+  return <div ref={containerRef} style={{ borderRadius: 8, overflow: 'hidden', border: '1px solid var(--border)' }} />
 }
 
-// ── SQL Console Sandbox ────────────────────────────────────────────────────
+// ── SQL Console Sandbox — REAL SQLite via sql.js (WebAssembly) ────────────
 export const SQLSandbox = ({ onCorrect, solved }: SandboxProps) => {
   const [injection, setInjection] = useState('')
-  const [result, setResult] = useState<string | null>(null)
-  const [injected, setInjected] = useState(false)
+  const [result, setResult] = useState<{ cols: string[]; rows: string[][] } | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [bypassed, setBypassed] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const dbRef = useRef<import('sql.js').Database | null>(null)
   const onCorrectRef = useRef(onCorrect)
   useEffect(() => { onCorrectRef.current = onCorrect }, [onCorrect])
 
-  const fullQuery = `SELECT * FROM users WHERE username='${injection}' AND password='secret'`
+  // boot real SQLite DB in browser via WASM
+  useEffect(() => {
+    let cancelled = false
+    import('sql.js').then(({ default: initSqlJs }) =>
+      initSqlJs({ locateFile: () => '/sql-wasm.wasm' })
+    ).then(SQL => {
+      if (cancelled) return
+      const db = new SQL.Database()
+      // seed a real users table
+      db.run(`
+        CREATE TABLE users (id INTEGER PRIMARY KEY, username TEXT, password TEXT, email TEXT);
+        INSERT INTO users VALUES (1,'admin','5f4dcc3b5aa765d61d8327deb882cf99','admin@corp.local');
+        INSERT INTO users VALUES (2,'root','d8578edf8458ce06fbc5bb76a58c5ca4','root@corp.local');
+        INSERT INTO users VALUES (3,'guest','084e0343a0486ff05530df6c705c8bb4','guest@corp.local');
+      `)
+      dbRef.current = db
+      setLoading(false)
+    }).catch(() => setLoading(false))
+    return () => { cancelled = true }
+  }, [])
+
+  const fullQuery = `SELECT * FROM users WHERE username='${injection}' AND password='...';`
 
   const run = () => {
-    if (solved) return
-    const q = fullQuery.toLowerCase()
-    const payload = injection.trim() || fullQuery
-    const correct = onCorrectRef.current(payload)
-    if (correct || q.includes("or '1'='1") || q.includes('or 1=1') || q.includes("admin'--")) {
-      setInjected(true)
-      setResult('✓ Query returned ALL rows — authentication bypassed!\n\nid | username | email\n1  | admin    | admin@corp.local\n2  | root     | root@corp.local\n\nFlag: CTF{sql_injection_bypass}')
-    } else if (injection.trim()) {
-      setResult('0 rows returned — login failed. Try injecting into the username.')
-    } else {
-      setResult('0 rows returned — login failed.')
+    if (solved || !dbRef.current) return
+    setError(null)
+    setResult(null)
+    const query = `SELECT * FROM users WHERE username='${injection}' AND password='irrelevant';`
+    try {
+      const res = dbRef.current.exec(query)
+      if (res.length > 0 && res[0].values.length > 0) {
+        const cols = res[0].columns
+        const rows = res[0].values.map(r => r.map(v => String(v ?? 'NULL')))
+        setResult({ cols, rows })
+        setBypassed(true)
+        onCorrectRef.current(injection)
+      } else {
+        setResult({ cols: [], rows: [] })
+      }
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'SQL error')
     }
   }
 
   return (
     <div className="space-y-3 text-xs font-mono">
-      {/* Visual query builder */}
+      {loading && <div className="text-xs" style={{ color: 'var(--text-muted)' }}>Initializing SQLite engine...</div>}
       <div className="rounded p-3 space-y-2" style={{ background: 'rgba(0,0,0,0.5)', border: '1px solid var(--border)' }}>
-        <div className="text-xs mb-1" style={{ color: 'var(--text-muted)' }}>// Type your injection into the username field:</div>
-        <div className="flex flex-wrap items-center gap-1" style={{ color: 'var(--cyan)' }}>
+        <div className="text-xs mb-1" style={{ color: 'var(--text-muted)' }}>// Real SQLite — inject into the username field:</div>
+        <div className="flex flex-wrap items-center gap-1">
           <span style={{ color: 'var(--text-dim)' }}>SELECT * FROM users WHERE username=</span>
           <span style={{ color: 'var(--green)' }}>'</span>
           <input
             value={injection}
             onChange={e => { if (!solved) setInjection(e.target.value) }}
             onKeyDown={e => e.key === 'Enter' && run()}
-            disabled={solved}
-            placeholder="type here..."
+            disabled={solved || loading}
+            placeholder="inject here..."
             className="bg-transparent outline-none font-mono disabled:opacity-50"
             style={{ color: '#febc2e', borderBottom: '1px solid var(--green)', minWidth: 80, width: Math.max(80, injection.length * 8) }}
             autoFocus
           />
           <span style={{ color: 'var(--green)' }}>'</span>
-          <span style={{ color: 'var(--text-dim)' }}>AND password='secret'</span>
+          <span style={{ color: 'var(--text-dim)' }}>AND password='...';</span>
         </div>
-        {/* Full query preview */}
         <div className="mt-2 p-2 rounded text-xs break-all" style={{ background: 'rgba(0,255,65,0.04)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}>
           <span style={{ color: 'var(--text-dim)' }}>Preview: </span>{fullQuery}
         </div>
       </div>
-      <button onClick={run} disabled={solved} className="w-full py-2 rounded font-bold transition-all hover:scale-[1.01] disabled:opacity-40"
+
+      <button onClick={run} disabled={solved || loading}
+        className="w-full py-2 rounded font-bold transition-all hover:scale-[1.01] disabled:opacity-40"
         style={{ background: 'rgba(0,255,65,0.1)', color: 'var(--green)', border: '1px solid var(--green)' }}>
-        ▶ EXECUTE QUERY
+        {loading ? 'LOADING ENGINE...' : '▶ EXECUTE QUERY'}
       </button>
+
+      {error && (
+        <div className="rounded p-2" style={{ background: 'rgba(255,95,87,0.06)', border: '1px solid #ff5f57', color: '#ff5f57' }}>
+          SQL Error: {error}
+        </div>
+      )}
+
       {result && (
-        <div className="rounded p-3 whitespace-pre-line"
-          style={{ background: injected ? 'rgba(0,255,65,0.06)' : 'rgba(255,95,87,0.06)', border: `1px solid ${injected ? 'var(--green)' : '#ff5f57'}`, color: injected ? 'var(--green)' : '#ff5f57' }}>
-          {result}
+        <div className="rounded overflow-hidden" style={{ border: `1px solid ${bypassed ? 'var(--green)' : 'var(--border)'}` }}>
+          {result.rows.length === 0 ? (
+            <div className="p-3" style={{ color: 'var(--text-muted)' }}>0 rows returned — login failed.</div>
+          ) : (
+            <>
+              <div className="px-3 py-1 text-xs font-bold" style={{ background: 'rgba(0,255,65,0.08)', color: 'var(--green)' }}>
+                {result.rows.length} row(s) returned — AUTH BYPASSED
+              </div>
+              <table className="w-full text-xs">
+                <thead>
+                  <tr style={{ borderBottom: '1px solid var(--border)' }}>
+                    {result.cols.map(c => <th key={c} className="px-3 py-1 text-left" style={{ color: 'var(--cyan)' }}>{c}</th>)}
+                  </tr>
+                </thead>
+                <tbody>
+                  {result.rows.map((row, i) => (
+                    <tr key={i} style={{ borderBottom: '1px solid rgba(0,255,65,0.05)' }}>
+                      {row.map((cell, j) => <td key={j} className="px-3 py-1" style={{ color: 'var(--text-dim)' }}>{cell}</td>)}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </>
+          )}
         </div>
       )}
     </div>
