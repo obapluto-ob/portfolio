@@ -199,6 +199,7 @@ export const SQLSandbox = ({ onCorrect, solved }: SandboxProps) => {
   useEffect(() => { onCorrectRef.current = onCorrect }, [onCorrect])
 
   const run = () => {
+    if (solved) return
     const q = query.toLowerCase()
     const correct = onCorrectRef.current(query)
     if (correct || q.includes("or '1'='1") || q.includes('or 1=1') || q.includes("admin'--")) {
@@ -215,11 +216,12 @@ export const SQLSandbox = ({ onCorrect, solved }: SandboxProps) => {
     <div className="space-y-3 text-xs font-mono">
       <div className="rounded p-3" style={{ background: 'rgba(0,0,0,0.5)', border: '1px solid var(--border)' }}>
         <div style={{ color: 'var(--text-muted)' }} className="mb-2">-- Edit the username value to inject:</div>
-        <textarea value={query} onChange={e => setQuery(e.target.value)} rows={3}
-          className="w-full bg-transparent outline-none resize-none"
+        <textarea value={query} onChange={e => { if (!solved) setQuery(e.target.value) }} rows={3}
+          disabled={solved}
+          className="w-full bg-transparent outline-none resize-none disabled:opacity-50"
           style={{ color: 'var(--cyan)', caretColor: 'var(--green)' }} />
       </div>
-      <button onClick={run} className="w-full py-2 rounded font-bold transition-all hover:scale-[1.01]"
+      <button onClick={run} disabled={solved} className="w-full py-2 rounded font-bold transition-all hover:scale-[1.01] disabled:opacity-40"
         style={{ background: 'rgba(0,255,65,0.1)', color: 'var(--green)', border: '1px solid var(--green)' }}>
         ▶ EXECUTE QUERY
       </button>
@@ -275,8 +277,9 @@ export const HashSandbox = ({ onCorrect, solved }: SandboxProps) => {
       </div>
       <div className="flex gap-2">
         <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && crack()}
+          disabled={solved}
           placeholder="Enter a word to test..."
-          className="flex-1 px-3 py-2 rounded outline-none font-mono text-xs min-w-0"
+          className="flex-1 px-3 py-2 rounded outline-none font-mono text-xs min-w-0 disabled:opacity-50"
           style={{ background: 'rgba(0,255,65,0.05)', border: '1px solid var(--border)', color: 'var(--green)' }} />
         <button onClick={crack} disabled={cracking || solved}
           className="px-4 py-2 rounded font-bold transition-all hover:scale-105 disabled:opacity-50 shrink-0"
@@ -371,8 +374,9 @@ export const BinarySandbox = ({ onCorrect, solved }: SandboxProps) => {
                 <input
                   maxLength={1}
                   value={inputs[i]}
-                  onChange={e => setInputs(p => { const n = [...p]; n[i] = e.target.value.toUpperCase(); return n })}
-                  className="w-9 h-9 text-center rounded text-base font-bold outline-none mx-auto block"
+                  disabled={solved}
+                  onChange={e => { if (!solved) setInputs(p => { const n = [...p]; n[i] = e.target.value.toUpperCase(); return n }) }}
+                  className="w-9 h-9 text-center rounded text-base font-bold outline-none mx-auto block disabled:opacity-50"
                   style={{
                     background: checked ? (correct ? 'rgba(0,255,65,0.15)' : 'rgba(255,95,87,0.15)') : 'rgba(0,255,65,0.05)',
                     border: `1px solid ${checked ? (correct ? 'var(--green)' : '#ff5f57') : 'var(--border)'}`,
