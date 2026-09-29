@@ -459,10 +459,11 @@ const RedTeamCTF = () => {
               const isYou = e.callsign === operator.callsign
               const displayScore = isYou ? operator.score : e.score
               const displaySolved = isYou ? operator.solved.length : e.solved
+              const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : null
               return (
-                <div key={e.callsign} className="flex items-center gap-3 py-1.5 text-xs" style={{ borderBottom: '1px solid var(--border)' }}>
-                  <span className="w-5 text-right shrink-0" style={{ color: i < 3 ? 'var(--green)' : 'var(--text-muted)' }}>{i + 1}.</span>
-                  <span className="flex-1 font-bold truncate" style={{ color: isYou ? 'var(--cyan)' : 'var(--text)' }}>
+                <div key={e.callsign} className="flex items-center gap-3 py-1.5 text-xs" style={{ borderBottom: '1px solid var(--border)', background: i < 3 ? `rgba(0,255,65,${0.04 - i * 0.01})` : 'transparent' }}>
+                  <span className="w-6 text-center shrink-0 text-base">{medal ?? `${i + 1}.`}</span>
+                  <span className="flex-1 font-bold truncate" style={{ color: isYou ? 'var(--cyan)' : i === 0 ? 'var(--green)' : 'var(--text)' }}>
                     {e.callsign}{isYou ? ' (you)' : ''}
                   </span>
                   <span className="shrink-0" style={{ color: 'var(--green)' }}>{displayScore}pts</span>
