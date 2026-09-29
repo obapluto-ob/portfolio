@@ -123,6 +123,11 @@ body::before {
   to   { width: 100%; }
 }
 
+@keyframes debrief-particle {
+  0%   { opacity: 1; transform: translate(0,0) scale(1); }
+  100% { opacity: 0; transform: translate(var(--dx,20px), var(--dy,-40px)) scale(0.3); }
+}
+
 @keyframes data-stream {
   0%   { transform: translateY(-100%); opacity:0; }
   10%  { opacity:1; }

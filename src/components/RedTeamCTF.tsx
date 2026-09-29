@@ -109,68 +109,138 @@ const DEBRIEF_LINES = [
   '> just kidding. probably.',
 ]
 
+// tiny Web Audio tick — no file needed
+const playTick = (() => {
+  let ctx: AudioContext | null = null
+  return () => {
+    try {
+      if (!ctx) ctx = new AudioContext()
+      const o = ctx.createOscillator()
+      const g = ctx.createGain()
+      o.connect(g); g.connect(ctx.destination)
+      o.frequency.value = 880
+      g.gain.setValueAtTime(0.04, ctx.currentTime)
+      g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.04)
+      o.start(); o.stop(ctx.currentTime + 0.04)
+    } catch {}
+  }
+})()
+
+const REDACT = '████████'
+
 const MissionDebrief = ({ operator, rank, onDismiss }: { operator: Operator; rank: number | null; onDismiss: () => void }) => {
   const [visibleLines, setVisibleLines] = useState(0)
-  const [showStats, setShowStats] = useState(false)
+  const [flipped, setFlipped] = useState(false)
+  const [revealed, setRevealed] = useState(0)   // how many stat fields unredacted
+  const [score, setScore] = useState(0)          // animated counter
+  const [particles, setParticles] = useState<{ id: number; x: number; y: number; char: string }[]>([])
   const [tilt, setTilt] = useState({ x: 0, y: 0 })
   const cardRef = useRef<HTMLDivElement>(null)
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
+  // terminal typewriter
   useEffect(() => {
     if (visibleLines < DEBRIEF_LINES.length) {
-      timerRef.current = setTimeout(() => setVisibleLines(v => v + 1), visibleLines < 4 ? 400 : 180)
+      playTick()
+      timerRef.current = setTimeout(() => setVisibleLines(v => v + 1), visibleLines < 4 ? 420 : 190)
     } else {
-      setTimeout(() => setShowStats(true), 300)
+      setTimeout(() => setFlipped(true), 400)
     }
     return () => { if (timerRef.current) clearTimeout(timerRef.current) }
   }, [visibleLines])
+
+  // matrix burst on flip
+  useEffect(() => {
+    if (!flipped) return
+    const chars = '01アイウエオカキクケコ#$%&'
+    const burst = Array.from({ length: 40 }, (_, i) => ({
+      id: i,
+      x: Math.random() * 100,
+      y: Math.random() * 100,
+      char: chars[Math.floor(Math.random() * chars.length)],
+    }))
+    setParticles(burst)
+    setTimeout(() => setParticles([]), 1200)
+    // start unredacting stats one by one
+    let i = 0
+    const iv = setInterval(() => {
+      i++; setRevealed(i)
+      if (i >= 6) clearInterval(iv)
+    }, 280)
+    return () => clearInterval(iv)
+  }, [flipped])
+
+  // score counter
+  useEffect(() => {
+    if (revealed < 3) return
+    const target = operator.score
+    const step = Math.ceil(target / 40)
+    const iv = setInterval(() => {
+      setScore(s => { if (s + step >= target) { clearInterval(iv); return target } return s + step })
+    }, 30)
+    return () => clearInterval(iv)
+  }, [revealed])
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     const el = cardRef.current
     if (!el) return
     const { left, top, width, height } = el.getBoundingClientRect()
-    const x = ((e.clientY - top) / height - 0.5) * -16
-    const y = ((e.clientX - left) / width - 0.5) * 16
-    setTilt({ x, y })
+    setTilt({ x: ((e.clientY - top) / height - 0.5) * -14, y: ((e.clientX - left) / width - 0.5) * 14 })
   }
 
   const clearanceLevel = operator.score >= 2000 ? 'LEVEL 5 — ELITE' : operator.score >= 1500 ? 'LEVEL 4 — SENIOR' : operator.score >= 1000 ? 'LEVEL 3 — OPERATIVE' : 'LEVEL 2 — RECRUIT'
+  const clearancePct   = operator.score >= 2000 ? 100 : operator.score >= 1500 ? 80 : operator.score >= 1000 ? 55 : 30
   const clearanceColor = operator.score >= 2000 ? '#cc00ff' : operator.score >= 1500 ? '#ff5f57' : operator.score >= 1000 ? '#febc2e' : 'var(--green)'
   const flawless = Object.keys(operator.hintsUsed).length === 0
 
+  const stats = [
+    { label: 'CALLSIGN',      value: `op://${operator.callsign}`,          color: 'var(--cyan)',  big: false },
+    { label: 'CLEARANCE',     value: clearanceLevel,                        color: clearanceColor, big: false },
+    { label: 'FINAL SCORE',   value: `${score} pts`,                        color: '#ffd700',      big: true  },
+    { label: 'FLAGS CAPTURED',value: `${operator.solved.length}/${CHALLENGES.length}`, color: 'var(--green)', big: true },
+    { label: 'GLOBAL RANK',   value: rank !== null ? `#${rank}` : '—',      color: rank !== null && rank <= 3 ? '#ffd700' : 'var(--text)', big: true },
+    { label: 'HINTS USED',    value: flawless ? 'NONE' : `${Object.keys(operator.hintsUsed).length}`, color: flawless ? 'var(--green)' : '#febc2e', big: true },
+  ]
+
   return (
     <div className="fixed inset-0 z-50 flex flex-col items-center justify-center font-mono overflow-auto py-8">
-      {/* Real cybersecurity background image */}
+      {/* Background */}
       <div className="absolute inset-0" style={{
         backgroundImage: 'url(https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=1600&q=80)',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
+        backgroundSize: 'cover', backgroundPosition: 'center',
         filter: 'brightness(0.18) saturate(0.4) hue-rotate(80deg)',
       }} />
-      {/* Green tint overlay */}
-      <div className="absolute inset-0" style={{ background: 'linear-gradient(135deg, rgba(0,20,0,0.85) 0%, rgba(0,5,0,0.92) 100%)' }} />
-      {/* Scanlines */}
+      <div className="absolute inset-0" style={{ background: 'linear-gradient(135deg,rgba(0,20,0,0.85),rgba(0,5,0,0.92))' }} />
       <div className="absolute inset-0 pointer-events-none" style={{
-        backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,65,0.025) 2px, rgba(0,255,65,0.025) 4px)'
+        backgroundImage: 'repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,255,65,0.025) 2px,rgba(0,255,65,0.025) 4px)'
       }} />
 
+      {/* Matrix burst particles */}
+      {particles.map(p => (
+        <div key={p.id} className="absolute text-xs font-mono pointer-events-none"
+          style={{
+            left: `${p.x}%`, top: `${p.y}%`,
+            color: 'var(--green)', opacity: 0,
+            animation: 'debrief-particle 1.2s ease-out forwards',
+            animationDelay: `${Math.random() * 0.3}s`,
+          }}>{p.char}</div>
+      ))}
+
       <div className="relative z-10 w-full max-w-lg px-4 space-y-4">
-        {/* Glitch title using existing CSS class */}
-        <div className="text-center mb-2">
+        {/* Glitch title */}
+        <div className="text-center">
           <div className="inline-block px-4 py-1 rounded text-xs tracking-widest font-bold mb-3"
             style={{ border: '1px solid #cc00ff', color: '#cc00ff', background: 'rgba(204,0,255,0.08)', boxShadow: '0 0 20px rgba(204,0,255,0.3)', letterSpacing: '0.3em' }}>
             [ CLASSIFIED — EYES ONLY ]
           </div>
-          <div
-            className="glitch text-4xl sm:text-6xl font-black tracking-tight leading-none"
+          <div className="glitch text-4xl sm:text-6xl font-black tracking-tight leading-none"
             data-text="ELITE OPERATOR"
-            style={{ color: 'var(--green)', textShadow: '0 0 40px var(--green), 0 0 80px rgba(0,255,65,0.3)' }}
-          >
+            style={{ color: 'var(--green)', textShadow: '0 0 40px var(--green),0 0 80px rgba(0,255,65,0.3)' }}>
             ELITE OPERATOR
           </div>
         </div>
 
-        {/* Terminal output */}
+        {/* Terminal */}
         <div className="rounded-lg p-4 space-y-1 scan-sweep" style={{ background: 'rgba(0,8,0,0.92)', border: '1px solid var(--border)' }}>
           {DEBRIEF_LINES.slice(0, visibleLines).map((line, i) => (
             <div key={i} className="text-xs" style={{
@@ -181,94 +251,107 @@ const MissionDebrief = ({ operator, rank, onDismiss }: { operator: Operator; ran
           {visibleLines < DEBRIEF_LINES.length && <div className="cursor text-xs" style={{ color: 'var(--green)' }} />}
         </div>
 
-        {/* 3D tilt dossier card */}
-        {showStats && (
-          <div
-            ref={cardRef}
-            onMouseMove={handleMouseMove}
-            onMouseLeave={() => setTilt({ x: 0, y: 0 })}
-            style={{
-              perspective: '800px',
-              transformStyle: 'preserve-3d',
-            }}
-          >
+        {/* 3D flip card */}
+        <div style={{ perspective: '1000px' }}>
+          <div style={{
+            position: 'relative',
+            transformStyle: 'preserve-3d',
+            transition: 'transform 0.8s cubic-bezier(0.4,0,0.2,1)',
+            transform: flipped ? 'rotateY(0deg)' : 'rotateY(180deg)',
+            minHeight: 320,
+          }}>
+            {/* BACK — classified stamp (shown before flip) */}
             <div style={{
-              transform: `rotateX(${tilt.x}deg) rotateY(${tilt.y}deg) translateZ(0)`,
-              transition: tilt.x === 0 ? 'transform 0.6s ease' : 'transform 0.1s ease',
-              transformStyle: 'preserve-3d',
-              borderRadius: '12px',
-              padding: '1rem',
-              background: 'rgba(0,18,0,0.92)',
-              border: '1px solid rgba(0,255,65,0.4)',
-              boxShadow: `0 ${20 + Math.abs(tilt.x)}px ${40 + Math.abs(tilt.y) * 2}px rgba(0,0,0,0.8), 0 0 40px rgba(0,255,65,0.08), inset 0 1px 0 rgba(0,255,65,0.1)`,
+              position: 'absolute', inset: 0, backfaceVisibility: 'hidden',
+              transform: 'rotateY(180deg)',
+              borderRadius: 12, background: 'rgba(0,10,0,0.95)',
+              border: '1px solid rgba(204,0,255,0.3)',
+              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16,
             }}>
-              {/* Floating image strip — circuit board */}
-              <div style={{
-                width: '100%', height: 80, borderRadius: 8, marginBottom: 12, overflow: 'hidden',
-                transform: 'translateZ(20px)',
-                boxShadow: '0 8px 24px rgba(0,0,0,0.6)',
+              <img
+                src="https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800&q=80"
+                alt=""
+                style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', borderRadius: 12, filter: 'brightness(0.15) saturate(0.2) hue-rotate(90deg)' }}
+              />
+              <div style={{ position: 'relative', zIndex: 1, textAlign: 'center' }}>
+                <div style={{ fontSize: 48, fontWeight: 900, color: '#cc00ff', opacity: 0.9, letterSpacing: '0.1em', textShadow: '0 0 30px #cc00ff', transform: 'rotate(-8deg)', border: '4px solid #cc00ff', padding: '8px 20px', borderRadius: 4 }}>
+                  CLASSIFIED
+                </div>
+                <div className="text-xs mt-4" style={{ color: 'rgba(204,0,255,0.6)' }}>DECRYPTING DOSSIER...</div>
+              </div>
+            </div>
+
+            {/* FRONT — dossier (shown after flip) */}
+            <div
+              ref={cardRef}
+              onMouseMove={handleMouseMove}
+              onMouseLeave={() => setTilt({ x: 0, y: 0 })}
+              style={{
+                position: 'absolute', inset: 0, backfaceVisibility: 'hidden',
+                transform: `rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`,
+                transition: tilt.x === 0 && tilt.y === 0 ? 'transform 0.5s ease' : 'transform 0.08s ease',
+                transformStyle: 'preserve-3d',
+                borderRadius: 12, padding: '1rem',
+                background: 'rgba(0,18,0,0.95)',
+                border: '1px solid rgba(0,255,65,0.4)',
+                boxShadow: `0 ${20+Math.abs(tilt.x)}px ${40+Math.abs(tilt.y)*2}px rgba(0,0,0,0.8),0 0 40px rgba(0,255,65,0.08)`,
               }}>
-                <img
-                  src="https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800&q=80"
-                  alt="circuit"
-                  style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'brightness(0.5) saturate(0.3) hue-rotate(90deg)', display: 'block' }}
-                />
-                <div style={{
-                  position: 'absolute', inset: 0, top: 0,
-                  background: 'linear-gradient(90deg, rgba(0,255,65,0.15), transparent, rgba(0,255,65,0.15))',
-                  mixBlendMode: 'screen',
-                }} />
+              {/* Circuit image strip */}
+              <div style={{ width:'100%', height:72, borderRadius:8, marginBottom:12, overflow:'hidden', transform:'translateZ(20px)', boxShadow:'0 8px 24px rgba(0,0,0,0.6)', position:'relative' }}>
+                <img src="https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800&q=80" alt=""
+                  style={{ width:'100%', height:'100%', objectFit:'cover', filter:'brightness(0.45) saturate(0.3) hue-rotate(90deg)', display:'block' }} />
+                <div style={{ position:'absolute', inset:0, background:'linear-gradient(90deg,rgba(0,255,65,0.15),transparent,rgba(0,255,65,0.15))', mixBlendMode:'screen' }} />
               </div>
 
-              <div className="text-xs tracking-widest mb-3" style={{ color: 'var(--text-muted)', transform: 'translateZ(10px)' }}>// OPERATOR DOSSIER</div>
+              <div className="text-xs tracking-widest mb-3" style={{ color:'var(--text-muted)', transform:'translateZ(10px)' }}>// OPERATOR DOSSIER</div>
 
-              <div className="grid grid-cols-2 gap-3" style={{ transform: 'translateZ(15px)' }}>
-                <div>
-                  <div className="text-xs" style={{ color: 'var(--text-muted)' }}>CALLSIGN</div>
-                  <div className="text-sm font-bold" style={{ color: 'var(--cyan)' }}>op://{operator.callsign}</div>
-                </div>
-                <div>
-                  <div className="text-xs" style={{ color: 'var(--text-muted)' }}>CLEARANCE</div>
-                  <div className="text-sm font-bold" style={{ color: clearanceColor }}>{clearanceLevel}</div>
-                </div>
-                <div>
-                  <div className="text-xs" style={{ color: 'var(--text-muted)' }}>FINAL SCORE</div>
-                  <div className="text-2xl font-black" style={{ color: '#ffd700', textShadow: '0 0 20px #ffd70080' }}>{operator.score} pts</div>
-                </div>
-                <div>
-                  <div className="text-xs" style={{ color: 'var(--text-muted)' }}>FLAGS CAPTURED</div>
-                  <div className="text-2xl font-black" style={{ color: 'var(--green)' }}>{operator.solved.length}/{CHALLENGES.length}</div>
-                </div>
-                {rank !== null && (
-                  <div>
-                    <div className="text-xs" style={{ color: 'var(--text-muted)' }}>GLOBAL RANK</div>
-                    <div className="text-2xl font-black" style={{ color: rank <= 3 ? '#ffd700' : 'var(--text)' }}>#{rank}</div>
+              <div className="grid grid-cols-2 gap-3" style={{ transform:'translateZ(15px)' }}>
+                {stats.map((s, i) => (
+                  <div key={s.label}>
+                    <div className="text-xs" style={{ color:'var(--text-muted)' }}>{s.label}</div>
+                    <div className={s.big ? 'text-2xl font-black' : 'text-sm font-bold'}
+                      style={{ color: revealed > i ? s.color : 'rgba(0,255,65,0.3)', textShadow: revealed > i && s.label === 'FINAL SCORE' ? '0 0 20px #ffd70080' : 'none',
+                        transition: 'color 0.3s', letterSpacing: revealed > i ? 'normal' : '0.05em' }}>
+                      {revealed > i ? s.value : REDACT}
+                    </div>
                   </div>
-                )}
-                <div>
-                  <div className="text-xs" style={{ color: 'var(--text-muted)' }}>HINTS USED</div>
-                  <div className="text-2xl font-black" style={{ color: flawless ? 'var(--green)' : '#febc2e' }}>
-                    {flawless ? 'NONE' : Object.keys(operator.hintsUsed).length}
-                  </div>
-                </div>
+                ))}
               </div>
 
-              {flawless && (
+              {/* Clearance bar */}
+              {revealed >= 2 && (
+                <div style={{ marginTop:12, transform:'translateZ(18px)' }}>
+                  <div className="flex justify-between text-xs mb-1" style={{ color:'var(--text-muted)' }}>
+                    <span>CLEARANCE LEVEL</span>
+                    <span style={{ color: clearanceColor }}>{clearancePct}%</span>
+                  </div>
+                  <div style={{ height:6, borderRadius:3, background:'rgba(0,255,65,0.1)', overflow:'hidden' }}>
+                    <div style={{
+                      height:'100%', borderRadius:3,
+                      background: `linear-gradient(90deg, var(--green), ${clearanceColor})`,
+                      boxShadow: `0 0 8px ${clearanceColor}`,
+                      width: `${clearancePct}%`,
+                      transition: 'width 1.2s cubic-bezier(0.4,0,0.2,1)',
+                    }} />
+                  </div>
+                </div>
+              )}
+
+              {flawless && revealed >= 6 && (
                 <div className="text-xs text-center py-1.5 rounded mt-3 font-bold tracking-widest"
-                  style={{ color: 'var(--green)', border: '1px solid rgba(0,255,65,0.4)', background: 'rgba(0,255,65,0.06)', transform: 'translateZ(20px)', letterSpacing: '0.2em' }}>
+                  style={{ color:'var(--green)', border:'1px solid rgba(0,255,65,0.4)', background:'rgba(0,255,65,0.06)', transform:'translateZ(22px)', letterSpacing:'0.2em' }}>
                   [ FLAWLESS — ZERO HINTS ]
                 </div>
               )}
 
-              <button
-                onClick={onDismiss}
+              <button onClick={onDismiss}
                 className="w-full py-2.5 rounded font-bold text-sm transition-all hover:scale-[1.02] mt-3"
-                style={{ background: 'var(--green)', color: 'var(--bg)', boxShadow: '0 0 20px rgba(0,255,65,0.4)', transform: 'translateZ(25px)', letterSpacing: '0.1em' }}>
+                style={{ background:'var(--green)', color:'var(--bg)', boxShadow:'0 0 20px rgba(0,255,65,0.4)', transform:'translateZ(25px)', letterSpacing:'0.1em' }}>
                 {'>'} VIEW LEADERBOARD
               </button>
             </div>
           </div>
-        )}
+        </div>
       </div>
     </div>
   )
