@@ -459,11 +459,31 @@ const RedTeamCTF = () => {
               const isYou = e.callsign === operator.callsign
               const displayScore = isYou ? operator.score : e.score
               const displaySolved = isYou ? operator.solved.length : e.solved
-              const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : null
+              const medalColors: Record<number, { outer: string; inner: string; shine: string; shadow: string }> = {
+                0: { outer: '#b8860b', inner: '#ffd700', shine: '#fff5a0', shadow: '#7a5800' },
+                1: { outer: '#7a7a7a', inner: '#c0c0c0', shine: '#f0f0f0', shadow: '#444' },
+                2: { outer: '#7a3f00', inner: '#cd7f32', shine: '#f0a860', shadow: '#4a2000' },
+              }
+              const m = medalColors[i]
               return (
-                <div key={e.callsign} className="flex items-center gap-3 py-1.5 text-xs" style={{ borderBottom: '1px solid var(--border)', background: i < 3 ? `rgba(0,255,65,${0.04 - i * 0.01})` : 'transparent' }}>
-                  <span className="w-6 text-center shrink-0 text-base">{medal ?? `${i + 1}.`}</span>
-                  <span className="flex-1 font-bold truncate" style={{ color: isYou ? 'var(--cyan)' : i === 0 ? 'var(--green)' : 'var(--text)' }}>
+                <div key={e.callsign} className="flex items-center gap-3 py-2 text-xs" style={{ borderBottom: '1px solid var(--border)' }}>
+                  <div className="shrink-0 flex items-center justify-center" style={{ width: 28, height: 28 }}>
+                    {m ? (
+                      <div style={{
+                        width: 24, height: 24, borderRadius: '50%',
+                        background: `radial-gradient(circle at 35% 35%, ${m.shine}, ${m.inner} 45%, ${m.outer} 75%, ${m.shadow})`,
+                        boxShadow: `0 2px 4px rgba(0,0,0,0.6), inset 0 1px 2px ${m.shine}40, 0 0 8px ${m.inner}60`,
+                        border: `1.5px solid ${m.outer}`,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: 9, fontWeight: 900, color: m.shadow,
+                        textShadow: `0 1px 0 ${m.shine}`,
+                        letterSpacing: '-0.5px',
+                      }}>{i + 1}</div>
+                    ) : (
+                      <span style={{ color: 'var(--text-muted)', fontSize: 11 }}>{i + 1}.</span>
+                    )}
+                  </div>
+                  <span className="flex-1 font-bold truncate" style={{ color: isYou ? 'var(--cyan)' : i === 0 ? '#ffd700' : i === 1 ? '#c0c0c0' : i === 2 ? '#cd7f32' : 'var(--text)' }}>
                     {e.callsign}{isYou ? ' (you)' : ''}
                   </span>
                   <span className="shrink-0" style={{ color: 'var(--green)' }}>{displayScore}pts</span>
