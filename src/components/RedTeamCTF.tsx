@@ -110,15 +110,19 @@ const RedTeamCTF = () => {
     if (saved) { try { setOperator(JSON.parse(saved)) } catch { localStorage.removeItem(LS_KEY) } }
   }, [])
 
-  // Leaderboard
-  useEffect(() => {
-    if (!showLeader) return
+  const fetchLeaderboard = () => {
     getDocs(query(collection(db, 'ctf_operators'), orderBy('score', 'desc'), limit(10)))
       .then(snap => setLeaderboard(snap.docs.map(d => {
         const data = d.data() as Operator
         return { callsign: data.callsign, score: data.score, solved: data.solved.length }
       })))
-      .catch(() => {})
+      .catch(e => console.warn('[CTF] Leaderboard fetch failed:', e))
+  }
+
+  // Leaderboard
+  useEffect(() => {
+    if (!showLeader) return
+    fetchLeaderboard()
   }, [showLeader])
 
   // Cooldown ticker
@@ -138,7 +142,11 @@ const RedTeamCTF = () => {
   const saveOperator = async (op: Operator) => {
     setOperator(op)
     localStorage.setItem(LS_KEY, JSON.stringify(op))
-    try { await setDoc(doc(db, 'ctf_operators', op.callsign), op, { merge: true }) } catch {}
+    try {
+      await setDoc(doc(db, 'ctf_operators', op.callsign), op, { merge: true })
+    } catch (e) {
+      console.warn('[CTF] Firestore write failed:', e)
+    }
   }
 
   const solved = new Set(operator?.solved ?? [])
@@ -185,11 +193,7 @@ const RedTeamCTF = () => {
     setFeedback({ msg: `FLAG CAPTURED! +${pts} pts`, ok: true })
     setAttempts(p => ({ ...p, [id]: 0 }))
     if (showLeader) {
-      getDocs(query(collection(db, 'ctf_operators'), orderBy('score', 'desc'), limit(10)))
-        .then(snap => setLeaderboard(snap.docs.map(d => {
-          const data = d.data() as Operator
-          return { callsign: data.callsign, score: data.score, solved: data.solved.length }
-        }))).catch(() => {})
+      setTimeout(fetchLeaderboard, 1500)
     }
     return true
   }, [operator, attempts, cooldowns, showLeader])
@@ -430,7 +434,10 @@ const RedTeamCTF = () => {
       {/* Leaderboard */}
       {showLeader && (
         <div className="rounded-lg p-4 mb-4" style={{ background: 'rgba(0,10,0,0.9)', border: '1px solid var(--green)' }}>
-          <div className="text-sm font-bold mb-3" style={{ color: 'var(--green)' }}>// GLOBAL LEADERBOARD</div>
+          <div className="text-sm font-bold mb-3 flex items-center justify-between" style={{ color: 'var(--green)' }}>
+            <span>// GLOBAL LEADERBOARD</span>
+            <button onClick={fetchLeaderboard} className="text-xs px-2 py-0.5 rounded" style={{ border: '1px solid var(--border)', color: 'var(--text-muted)', background: 'transparent' }}>↻ REFRESH</button>
+          </div>
           {leaderboard.length === 0
             ? <div className="text-xs" style={{ color: 'var(--text-muted)' }}>No operators yet — be the first!</div>
             : leaderboard.map((e, i) => {
