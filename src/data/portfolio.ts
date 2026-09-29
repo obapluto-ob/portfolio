@@ -124,7 +124,7 @@ export const projects: Project[] = [
     description: "React and TypeScript developer portfolio with interactive tooling, GitHub integrations, analytics, Firebase-backed engagement and responsive UI.",
     technologies: ["React", "TypeScript", "Vite", "Firebase", "Tailwind CSS"],
     githubUrl: "https://github.com/obapluto-ob/portfolio",
-    liveUrl: "https://obapluto-ob.github.io/portfolio",
+    liveUrl: "https://obapluto-ob.netlify.app",
     status: "production",
     featured: false
   }

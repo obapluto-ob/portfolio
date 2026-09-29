@@ -1,11 +1,10 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-// The site is deployed to https://obapluto-ob.github.io/portfolio/
-// so base must match the repository name.
+// Base is '/' for Netlify. For GitHub Pages use '/portfolio/'.
 export default defineConfig({
   plugins: [react()],
-  base: '/portfolio/',
+  base: '/',
   server: {
     host: true,
     port: 5173

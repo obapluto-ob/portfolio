@@ -80,7 +80,7 @@ const Hero = () => {
           <div className="relative w-32 h-32 rounded-full overflow-hidden border-2"
             style={{ borderColor: 'var(--green-dim)' }}>
             <img
-              src="/portfolio/4992579386737363750_121.jpg"
+              src="/4992579386737363750_121.jpg"
               alt={personalInfo.name}
               className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
               onError={(e) => {
