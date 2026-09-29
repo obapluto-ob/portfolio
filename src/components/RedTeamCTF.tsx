@@ -104,10 +104,18 @@ const RedTeamCTF = () => {
   // mobile: 'list' shows challenge list, 'sandbox' shows active challenge
   const [mobileView, setMobileView] = useState<'list' | 'sandbox'>('list')
 
-  // Auto-login
+  // Auto-login + sync to Firestore
   useEffect(() => {
     const saved = localStorage.getItem(LS_KEY)
-    if (saved) { try { setOperator(JSON.parse(saved)) } catch { localStorage.removeItem(LS_KEY) } }
+    if (saved) {
+      try {
+        const op = JSON.parse(saved) as Operator
+        setOperator(op)
+        // force sync to Firestore in case it was never written (e.g. rules were blocking)
+        setDoc(doc(db, 'ctf_operators', op.callsign), op, { merge: true })
+          .catch(e => console.warn('[CTF] Auto-sync failed:', e))
+      } catch { localStorage.removeItem(LS_KEY) }
+    }
   }, [])
 
   const fetchLeaderboard = () => {
