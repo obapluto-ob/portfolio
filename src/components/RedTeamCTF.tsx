@@ -188,9 +188,10 @@ const MissionDebrief = ({ operator, rank, onDismiss }: { operator: Operator; ran
     setTilt({ x: ((e.clientY - top) / height - 0.5) * -14, y: ((e.clientX - left) / width - 0.5) * 14 })
   }
 
-  const clearanceLevel = operator.score >= 2000 ? 'LEVEL 5 — ELITE' : operator.score >= 1500 ? 'LEVEL 4 — SENIOR' : operator.score >= 1000 ? 'LEVEL 3 — OPERATIVE' : 'LEVEL 2 — RECRUIT'
-  const clearancePct   = operator.score >= 2000 ? 100 : operator.score >= 1500 ? 80 : operator.score >= 1000 ? 55 : 30
-  const clearanceColor = operator.score >= 2000 ? '#cc00ff' : operator.score >= 1500 ? '#ff5f57' : operator.score >= 1000 ? '#febc2e' : 'var(--green)'
+  const maxScore = CHALLENGES.reduce((s, c) => s + c.points, 0)
+  const clearanceLevel = operator.score >= maxScore * 0.9 ? 'LEVEL 5 — ELITE' : operator.score >= maxScore * 0.65 ? 'LEVEL 4 — SENIOR' : operator.score >= maxScore * 0.4 ? 'LEVEL 3 — OPERATIVE' : 'LEVEL 2 — RECRUIT'
+  const clearancePct   = Math.round(Math.min((operator.score / maxScore) * 100, 100))
+  const clearanceColor = operator.score >= maxScore * 0.9 ? '#cc00ff' : operator.score >= maxScore * 0.65 ? '#ff5f57' : operator.score >= maxScore * 0.4 ? '#febc2e' : 'var(--green)'
   const flawless = Object.keys(operator.hintsUsed).length === 0
 
   const stats = [
@@ -248,7 +249,17 @@ const MissionDebrief = ({ operator, rank, onDismiss }: { operator: Operator; ran
               fontWeight: line.includes('CLASSIFIED') ? 700 : 400,
             }}>{line}</div>
           ))}
-          {visibleLines < DEBRIEF_LINES.length && <div className="cursor text-xs" style={{ color: 'var(--green)' }} />}
+              {visibleLines < DEBRIEF_LINES.length && (
+            <>
+              <div className="cursor text-xs" style={{ color: 'var(--green)' }} />
+              <button
+                onClick={() => setVisibleLines(DEBRIEF_LINES.length)}
+                className="text-xs mt-2 px-2 py-0.5 rounded"
+                style={{ border: '1px solid var(--border)', color: 'var(--text-muted)', background: 'transparent' }}>
+                skip &gt;&gt;
+              </button>
+            </>
+          )}
         </div>
 
         {/* 3D flip card */}
@@ -286,6 +297,14 @@ const MissionDebrief = ({ operator, rank, onDismiss }: { operator: Operator; ran
               ref={cardRef}
               onMouseMove={handleMouseMove}
               onMouseLeave={() => setTilt({ x: 0, y: 0 })}
+              onTouchMove={e => {
+                const t = e.touches[0]
+                const el = cardRef.current
+                if (!el) return
+                const { left, top, width, height } = el.getBoundingClientRect()
+                setTilt({ x: ((t.clientY - top) / height - 0.5) * -10, y: ((t.clientX - left) / width - 0.5) * 10 })
+              }}
+              onTouchEnd={() => setTilt({ x: 0, y: 0 })}
               style={{
                 position: 'absolute', inset: 0, backfaceVisibility: 'hidden',
                 transform: `rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`,
@@ -297,10 +316,10 @@ const MissionDebrief = ({ operator, rank, onDismiss }: { operator: Operator; ran
                 boxShadow: `0 ${20+Math.abs(tilt.x)}px ${40+Math.abs(tilt.y)*2}px rgba(0,0,0,0.8),0 0 40px rgba(0,255,65,0.08)`,
               }}>
               {/* Circuit image strip */}
-              <div style={{ width:'100%', height:72, borderRadius:8, marginBottom:12, overflow:'hidden', transform:'translateZ(20px)', boxShadow:'0 8px 24px rgba(0,0,0,0.6)', position:'relative' }}>
+              <div style={{ width:'100%', height:72, borderRadius:8, marginBottom:12, overflow:'hidden', transform:'translateZ(20px)', boxShadow:'0 8px 24px rgba(0,0,0,0.6)', position:'relative', flexShrink:0 }}>
                 <img src="https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800&q=80" alt=""
-                  style={{ width:'100%', height:'100%', objectFit:'cover', filter:'brightness(0.45) saturate(0.3) hue-rotate(90deg)', display:'block' }} />
-                <div style={{ position:'absolute', inset:0, background:'linear-gradient(90deg,rgba(0,255,65,0.15),transparent,rgba(0,255,65,0.15))', mixBlendMode:'screen' }} />
+                  style={{ width:'100%', height:'100%', objectFit:'cover', filter:'brightness(0.45) saturate(0.3) hue-rotate(90deg)', display:'block', position:'relative', zIndex:0 }} />
+                <div style={{ position:'absolute', inset:0, zIndex:1, background:'linear-gradient(90deg,rgba(0,255,65,0.15),transparent,rgba(0,255,65,0.15))', pointerEvents:'none' }} />
               </div>
 
               <div className="text-xs tracking-widest mb-3" style={{ color:'var(--text-muted)', transform:'translateZ(10px)' }}>// OPERATOR DOSSIER</div>
@@ -395,8 +414,7 @@ const RedTeamCTF = () => {
         const op = JSON.parse(saved) as Operator
         setOperator(op)
         setDoc(doc(db, 'ctf_operators', op.callsign), op, { merge: true })
-          .then(() => console.log('[CTF] Auto-sync success:', op.callsign))
-          .catch(e => console.warn('[CTF] Auto-sync failed:', e))
+          .catch(() => {})
       } catch { localStorage.removeItem(LS_KEY) }
     }
   }, [])
@@ -405,10 +423,6 @@ const RedTeamCTF = () => {
     setLeaderboard([])
     getDocs(query(collection(db, 'ctf_operators'), orderBy('score', 'desc'), limit(10)))
       .then(snap => {
-        console.log('[CTF] Leaderboard snap size:', snap.size, snap.docs.map(d => d.id))
-        if (snap.empty) {
-          console.warn('[CTF] Firestore ctf_operators collection is empty')
-        }
         setLeaderboard(snap.docs.map(d => {
           const data = d.data() as Operator
           return { callsign: data.callsign, score: data.score, solved: data.solved.length }
@@ -442,9 +456,7 @@ const RedTeamCTF = () => {
     localStorage.setItem(LS_KEY, JSON.stringify(op))
     try {
       await setDoc(doc(db, 'ctf_operators', op.callsign), op, { merge: true })
-    } catch (e) {
-      console.warn('[CTF] Firestore write failed:', e)
-    }
+    } catch { /* offline — localStorage already saved */ }
   }
 
   const solved = new Set(operator?.solved ?? [])
@@ -622,7 +634,7 @@ const RedTeamCTF = () => {
             }}>
             <div className="flex items-center justify-between mb-1 gap-2">
               <span className="text-xs font-bold truncate" style={{ color: isSolved ? 'var(--green)' : locked ? 'var(--text-muted)' : 'var(--text)' }}>
-                {isSolved ? '✓ ' : locked ? '🔒 ' : inCooldown ? `⏱${secsLeft}s ` : '○ '}{c.title}
+                {isSolved ? '[+] ' : locked ? '[X] ' : inCooldown ? `[${secsLeft}s] ` : '[ ] '}{c.title}
               </span>
               <span className="text-xs font-bold shrink-0" style={{ color: DIFF_COLOR[c.difficulty] }}>{c.difficulty}</span>
             </div>

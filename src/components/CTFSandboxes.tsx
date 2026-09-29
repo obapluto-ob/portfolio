@@ -289,7 +289,7 @@ export const HashSandbox = ({ onCorrect, solved }: SandboxProps) => {
     if (!input.trim() || cracking || solved) return
     setCracking(true)
     const guess = input.trim()
-    const wordlist = ['123456', 'admin', 'letmein', 'qwerty', guess]
+    const wordlist = ['123456', 'admin', 'letmein', 'qwerty', guess] // intentional CTF wordlist — not real credentials
     let i = 0
     const interval = setInterval(() => {
       if (i >= wordlist.length) { clearInterval(interval); setCracking(false); return }
