@@ -651,74 +651,118 @@ export const BinarySandbox = ({ onCorrect, solved }: SandboxProps) => {
   )
 }
 
-// ── Recon Sandbox (portscan + osint recon) ────────────────────────────────
+// ── Recon Sandbox — REAL GitHub API OSINT + simulated nmap ────────────────
 export const ReconSandbox = ({ challenge, onCorrect, solved }: SandboxProps) => {
   const isPortscan = challenge.id === 'portscan'
   const [cmd, setCmd] = useState('')
-  const [lines, setLines] = useState<{ text: string; green?: boolean }[]>([
-    { text: isPortscan ? '> Network Recon Terminal v1.0' : '> OSINT Terminal v1.0' },
+  const [lines, setLines] = useState<{ text: string; green?: boolean; cyan?: boolean; red?: boolean; dim?: boolean }[]>([
+    { text: isPortscan ? '> Network Recon Terminal v2.0' : '> OSINT Terminal v2.0 — live GitHub API' },
     { text: '> Type "help" for available commands' },
   ])
   const [historyR, setHistoryR] = useState<string[]>([])
   const [histIdxR, setHistIdxR] = useState(-1)
+  const [loading, setLoading] = useState(false)
   const cmdInputRef = useRef<HTMLInputElement>(null)
   const logRef = useRef<HTMLDivElement>(null)
   const onCorrectRef = useRef(onCorrect)
   useEffect(() => { onCorrectRef.current = onCorrect }, [onCorrect])
   useEffect(() => { if (logRef.current) logRef.current.scrollTop = logRef.current.scrollHeight }, [lines])
 
-  const run = (c: string) => {
-    if (solved) return
+  const add = (text: string, opts: { green?: boolean; cyan?: boolean; red?: boolean; dim?: boolean } = {}) =>
+    setLines(p => [...p, { text, ...opts }])
+
+  const run = async (c: string) => {
+    if (solved || loading) return
     setHistoryR(h => [c, ...h])
     setHistIdxR(-1)
     const lower = c.trim().toLowerCase()
-    setLines(p => [...p, { text: `$ ${c}`, green: true }])
+    add(`$ ${c}`, { green: true })
+
     if (lower === 'help') {
-      setLines(p => [...p,
-        { text: 'nmap <ip>            Port scan' },
-        ...(!isPortscan ? [
-          { text: 'whois <domain>       WHOIS lookup' },
-          { text: 'github <username>    GitHub profile recon' },
-        ] : []),
-        { text: 'submit <answer>      Submit your answer' },
-      ])
+      if (isPortscan) {
+        add('nmap <ip>            Scan open ports', { dim: true })
+        add('submit <port>        Submit your answer', { dim: true })
+      } else {
+        add('github <username>    Fetch real GitHub profile', { dim: true })
+        add('whois <domain>       WHOIS lookup', { dim: true })
+        add('repos <username>     List public repos', { dim: true })
+        add('submit <answer>      Submit your answer', { dim: true })
+      }
+
     } else if (lower.startsWith('nmap ')) {
-      setLines(p => [...p,
-        { text: 'Starting Nmap scan...' },
-        { text: 'PORT    STATE  SERVICE' },
-        { text: '22/tcp  open   ssh' },
-        { text: '80/tcp  open   http' },
-        { text: '443/tcp open   https' },
-        { text: isPortscan ? '> SSH port identified. Use: submit <port>' : '> Scan complete.' },
-      ])
-    } else if (!isPortscan && lower.startsWith('whois ')) {
-      setLines(p => [...p,
-        { text: 'Registrant: Obed Emoni Lopeyok' },
-        { text: 'Country: KE' },
-        { text: 'GitHub: github.com/obapluto-ob' },
-      ])
+      const ip = c.split(' ')[1]
+      add(`Starting Nmap 7.94 scan on ${ip}...`, { dim: true })
+      await new Promise(r => setTimeout(r, 800))
+      add('Host is up (0.0021s latency).', { dim: true })
+      add('PORT     STATE  SERVICE  VERSION', { cyan: true })
+      add('22/tcp   open   ssh      OpenSSH 8.9p1', { green: true })
+      add('80/tcp   open   http     nginx 1.24.0', { dim: true })
+      add('443/tcp  open   https    nginx 1.24.0', { dim: true })
+      add('3306/tcp filtered mysql', { dim: true })
+      add('Nmap done: 1 IP address scanned in 1.42s', { dim: true })
+      add('> SSH identified. Use: submit <port>', { dim: true })
+
     } else if (!isPortscan && lower.startsWith('github ')) {
-      const user = c.split(' ')[1]
-      setLines(p => [...p,
-        { text: `Fetching github.com/${user}...` },
-        { text: 'Login: obapluto-ob' },
-        { text: 'Name: Obed Emoni Lopeyok' },
-        { text: 'Repos: 20+' },
-      ])
+      const username = c.split(' ')[1]?.trim()
+      if (!username) { add('Usage: github <username>', { red: true }); setCmd(''); return }
+      setLoading(true)
+      add(`Fetching https://api.github.com/users/${username}...`, { dim: true })
+      try {
+        const res = await fetch(`https://api.github.com/users/${username}`)
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        const data = await res.json()
+        add('─────────────────────────────────────', { dim: true })
+        add(`Login:      ${data.login}`, { cyan: true })
+        add(`Name:       ${data.name ?? 'N/A'}`, { dim: true })
+        add(`Bio:        ${data.bio ?? 'N/A'}`, { dim: true })
+        add(`Location:   ${data.location ?? 'N/A'}`, { dim: true })
+        add(`Public repos: ${data.public_repos}`, { dim: true })
+        add(`Followers:  ${data.followers}`, { dim: true })
+        add(`Created:    ${new Date(data.created_at).toLocaleDateString()}`, { dim: true })
+        add(`Profile:    ${data.html_url}`, { dim: true })
+        add('─────────────────────────────────────', { dim: true })
+        add(`> Found target. Use: submit ${data.login}`, { green: true })
+      } catch (e) {
+        add(`Error: ${e instanceof Error ? e.message : 'fetch failed'}`, { red: true })
+      }
+      setLoading(false)
+
+    } else if (!isPortscan && lower.startsWith('repos ')) {
+      const username = c.split(' ')[1]?.trim()
+      if (!username) { add('Usage: repos <username>', { red: true }); setCmd(''); return }
+      setLoading(true)
+      add(`Fetching repos for ${username}...`, { dim: true })
+      try {
+        const res = await fetch(`https://api.github.com/users/${username}/repos?sort=updated&per_page=8`)
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        const repos = await res.json()
+        add(`Found ${repos.length} repos:`, { cyan: true })
+        repos.forEach((r: { name: string; language: string | null; stargazers_count: number; description: string | null }) => {
+          add(`  ${r.name.padEnd(30)} [${r.language ?? 'N/A'}] ★${r.stargazers_count}`, { dim: true })
+          if (r.description) add(`    ${r.description}`, { dim: true })
+        })
+      } catch (e) {
+        add(`Error: ${e instanceof Error ? e.message : 'fetch failed'}`, { red: true })
+      }
+      setLoading(false)
+
+    } else if (!isPortscan && lower.startsWith('whois ')) {
+      add('Registrant: Obed Emoni Lopeyok', { dim: true })
+      add('Country: KE', { dim: true })
+      add('GitHub: github.com/obapluto-ob', { cyan: true })
+
     } else if (lower.startsWith('submit ')) {
       const ans = c.replace(/^submit /i, '').trim()
       if (onCorrectRef.current(ans)) {
-        setLines(p => [...p, { text: `✓ CORRECT! Flag: CTF{${isPortscan ? 'nmap_port_22_ssh' : 'osint_recon_complete'}}`, green: true }])
+        add(`✓ CORRECT! Flag: CTF{${isPortscan ? 'nmap_port_22_ssh' : 'osint_recon_complete'}}`, { green: true })
       } else {
-        setLines(p => [...p, { text: '✗ Wrong answer. Keep digging.' }])
+        add('✗ Wrong answer. Keep digging.', { red: true })
       }
     } else {
-      // try raw input as a direct answer
-      const ans = c.trim()
-      if (onCorrectRef.current(ans)) {
-        setLines(p => [...p, { text: `✓ CORRECT! Flag: CTF{${isPortscan ? 'nmap_port_22_ssh' : 'osint_recon_complete'}}`, green: true }])
+      if (onCorrectRef.current(c.trim())) {
+        add(`✓ CORRECT! Flag: CTF{${isPortscan ? 'nmap_port_22_ssh' : 'osint_recon_complete'}}`, { green: true })
       } else {
-        setLines(p => [...p, { text: `Command not found: ${c}. Type "help" or: submit <answer>` }])
+        add(`Command not found: ${c}. Type "help"`, { red: true })
       }
     }
     setCmd('')
@@ -726,8 +770,14 @@ export const ReconSandbox = ({ challenge, onCorrect, solved }: SandboxProps) => 
 
   return (
     <div className="rounded overflow-hidden" style={{ border: '1px solid var(--border)', background: 'rgba(0,0,0,0.7)' }}>
-      <div ref={logRef} className="p-3 text-xs font-mono space-y-0.5 overflow-y-auto" style={{ height: '180px' }}>
-        {lines.map((l, i) => <div key={i} style={{ color: l.green ? 'var(--green)' : 'var(--text-dim)' }}>{l.text}</div>)}
+      <div ref={logRef} className="p-3 text-xs font-mono space-y-0.5 overflow-y-auto" style={{ height: '200px' }}>
+        {lines.map((l, i) => (
+          <div key={i} style={{
+            color: l.green ? 'var(--green)' : l.cyan ? 'var(--cyan)' : l.red ? '#ff5f57' : 'var(--text-dim)',
+            opacity: l.dim ? 0.7 : 1,
+          }}>{l.text}</div>
+        ))}
+        {loading && <div style={{ color: 'var(--green)' }}>fetching<span className="cursor" /></div>}
       </div>
       <div className="flex items-center gap-2 px-3 py-2" style={{ borderTop: '1px solid var(--border)', opacity: solved ? 0.4 : 1 }}>
         <span className="text-xs shrink-0" style={{ color: 'var(--green-dim)' }}>$</span>
@@ -746,7 +796,7 @@ export const ReconSandbox = ({ challenge, onCorrect, solved }: SandboxProps) => 
               else { setHistIdxR(next); setCmd(historyR[next]); setTimeout(() => { const el = cmdInputRef.current; if (el) { el.selectionStart = el.selectionEnd = el.value.length } }, 0) }
             }
           }}
-          disabled={solved}
+          disabled={solved || loading}
           ref={cmdInputRef}
           placeholder={isPortscan ? 'nmap 192.168.1.1' : 'github obapluto-ob'}
           className="flex-1 bg-transparent text-xs outline-none font-mono min-w-0"
