@@ -195,15 +195,27 @@ const RedTeamCTF = () => {
   }
 
   const handleCorrect = (id: ChallengeId, input: string): boolean => {
+    // Block if in cooldown
+    if (cooldowns[id] && cooldowns[id] > Date.now()) {
+      const secs = Math.ceil((cooldowns[id] - Date.now()) / 1000)
+      setFeedback({ msg: `⏱ Cooldown active — wait ${secs}s before trying again.`, ok: false })
+      return false
+    }
+    // Block if already solved
+    if (solved.has(id)) return true
+
     const correct = ANSWERS[id].some(a => a.toLowerCase() === input.trim().toLowerCase())
     if (!correct) {
       const att = (attempts[id] ?? 0) + 1
-      setAttempts(p => ({ ...p, [id]: att }))
-      if (att >= 5) {
+      // Hard cap — never go above 5 active attempts
+      const capped = Math.min(att, 5)
+      setAttempts(p => ({ ...p, [id]: capped }))
+      if (capped >= 5) {
         setCooldowns(p => ({ ...p, [id]: Date.now() + 60_000 }))
-        setFeedback({ msg: '✗ 5 failed attempts — 60s cooldown activated.', ok: false })
+        setAttempts(p => ({ ...p, [id]: 0 })) // reset after cooldown set
+        setFeedback({ msg: '✗ 5 failed attempts — 60s cooldown activated. Use a hint.', ok: false })
       } else {
-        setFeedback({ msg: `✗ Wrong. Attempt ${att}/5.${att >= 3 ? ' Unlock a hint.' : ''}`, ok: false })
+        setFeedback({ msg: `✗ Wrong. Attempt ${capped}/5.${capped >= 3 ? ' Consider unlocking a hint.' : ''}`, ok: false })
       }
       return false
     }
@@ -330,8 +342,8 @@ const RedTeamCTF = () => {
 
             return (
               <button key={c.id}
-                onClick={() => { if (!locked) { setSelected(c.id); setFeedback(null); setView('sandbox') } }}
-                disabled={locked}
+                onClick={() => { if (!locked && !inCooldown) { setSelected(c.id); setFeedback(null); setView('sandbox') } }}
+                disabled={locked || !!inCooldown}
                 className="w-full text-left rounded-lg p-3 transition-all"
                 style={{
                   background: isActive ? 'rgba(0,255,65,0.08)' : isSolved ? 'rgba(0,255,65,0.03)' : 'rgba(0,15,0,0.6)',
