@@ -111,19 +111,26 @@ const RedTeamCTF = () => {
       try {
         const op = JSON.parse(saved) as Operator
         setOperator(op)
-        // force sync to Firestore in case it was never written (e.g. rules were blocking)
         setDoc(doc(db, 'ctf_operators', op.callsign), op, { merge: true })
+          .then(() => console.log('[CTF] Auto-sync success:', op.callsign))
           .catch(e => console.warn('[CTF] Auto-sync failed:', e))
       } catch { localStorage.removeItem(LS_KEY) }
     }
   }, [])
 
   const fetchLeaderboard = () => {
+    setLeaderboard([])
     getDocs(query(collection(db, 'ctf_operators'), orderBy('score', 'desc'), limit(10)))
-      .then(snap => setLeaderboard(snap.docs.map(d => {
-        const data = d.data() as Operator
-        return { callsign: data.callsign, score: data.score, solved: data.solved.length }
-      })))
+      .then(snap => {
+        console.log('[CTF] Leaderboard snap size:', snap.size, snap.docs.map(d => d.id))
+        if (snap.empty) {
+          console.warn('[CTF] Firestore ctf_operators collection is empty')
+        }
+        setLeaderboard(snap.docs.map(d => {
+          const data = d.data() as Operator
+          return { callsign: data.callsign, score: data.score, solved: data.solved.length }
+        }))
+      })
       .catch(e => console.warn('[CTF] Leaderboard fetch failed:', e))
   }
 
