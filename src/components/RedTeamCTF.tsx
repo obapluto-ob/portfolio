@@ -556,9 +556,15 @@ const RedTeamCTF = () => {
         )
       })}
       {solved.size === CHALLENGES.length && (
-        <div className="rounded-lg p-4 text-center" style={{ border: '1px solid var(--green)', background: 'rgba(0,255,65,0.06)' }}>
+        <div className="rounded-lg p-4 text-center space-y-2" style={{ border: '1px solid var(--green)', background: 'rgba(0,255,65,0.06)' }}>
           <div className="font-bold text-sm" style={{ color: 'var(--green)' }}>ALL FLAGS CAPTURED</div>
-          <div className="text-xs mt-1" style={{ color: 'var(--text-dim)' }}>{totalPoints} pts — Elite Operator</div>
+          <div className="text-xs" style={{ color: 'var(--text-dim)' }}>{totalPoints} pts — Elite Operator</div>
+          <button
+            onClick={() => setShowDebrief(true)}
+            className="w-full py-2 rounded font-bold text-xs transition-all hover:scale-[1.02] mt-1"
+            style={{ background: 'var(--green)', color: 'var(--bg)', boxShadow: '0 0 16px rgba(0,255,65,0.4)', letterSpacing: '0.1em' }}>
+            {'>'} VIEW MISSION DEBRIEF
+          </button>
         </div>
       )}
     </div>
