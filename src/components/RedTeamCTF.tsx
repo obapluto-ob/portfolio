@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { collection, doc, setDoc, getDoc, getDocs, orderBy, query, limit } from 'firebase/firestore'
 import { db } from '../firebase'
 import { CHALLENGES, ANSWERS, DIFF_COLOR, type ChallengeId, type Operator } from '../data/ctf'
@@ -91,6 +91,142 @@ const RegisterScreen = ({ onRegister }: { onRegister: (op: Operator) => void }) 
   )
 }
 
+// ── Mission Debrief (all flags captured) ──────────────────────────────────
+const DEBRIEF_LINES = [
+  '> INITIALIZING DEBRIEF PROTOCOL...',
+  '> CONNECTING TO SECURE SERVER... OK',
+  '> VERIFYING OPERATOR CREDENTIALS... CONFIRMED',
+  '> COMPILING MISSION REPORT...',
+  '────────────────────────────────────────',
+  '  [CLASSIFIED] MISSION DEBRIEF — EYES ONLY',
+  '────────────────────────────────────────',
+  '> ALL TARGETS NEUTRALIZED',
+  '> ALL FLAGS CAPTURED',
+  '> ZERO TRACES LEFT BEHIND',
+  '> NSA HAS BEEN NOTIFIED. JUST KIDDING.',
+  '────────────────────────────────────────',
+  '> INITIATING SELF-DESTRUCT IN 10s...',
+  '> just kidding. probably.',
+]
+
+const MissionDebrief = ({ operator, rank, onDismiss }: { operator: Operator; rank: number | null; onDismiss: () => void }) => {
+  const [visibleLines, setVisibleLines] = useState(0)
+  const [glitch, setGlitch] = useState(false)
+  const [showStats, setShowStats] = useState(false)
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    if (visibleLines < DEBRIEF_LINES.length) {
+      timerRef.current = setTimeout(() => setVisibleLines(v => v + 1), visibleLines < 4 ? 400 : 180)
+    } else {
+      setTimeout(() => setShowStats(true), 300)
+    }
+    return () => { if (timerRef.current) clearTimeout(timerRef.current) }
+  }, [visibleLines])
+
+  useEffect(() => {
+    const interval = setInterval(() => { setGlitch(true); setTimeout(() => setGlitch(false), 120) }, 3000)
+    return () => clearInterval(interval)
+  }, [])
+
+  const clearanceLevel = operator.score >= 2000 ? 'LEVEL 5 — ELITE' : operator.score >= 1500 ? 'LEVEL 4 — SENIOR' : operator.score >= 1000 ? 'LEVEL 3 — OPERATIVE' : 'LEVEL 2 — RECRUIT'
+  const clearanceColor = operator.score >= 2000 ? '#cc00ff' : operator.score >= 1500 ? '#ff5f57' : operator.score >= 1000 ? '#febc2e' : 'var(--green)'
+
+  return (
+    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center font-mono overflow-auto py-8"
+      style={{ background: 'rgba(0,0,0,0.98)' }}>
+      {/* Scanlines */}
+      <div className="absolute inset-0 pointer-events-none" style={{
+        backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,65,0.025) 2px, rgba(0,255,65,0.025) 4px)'
+      }} />
+
+      <div className="relative z-10 w-full max-w-lg px-4 space-y-4">
+        {/* Glitch badge */}
+        <div className="text-center mb-2">
+          <div className="inline-block px-4 py-1 rounded text-xs tracking-widest font-bold mb-3"
+            style={{ border: '1px solid #cc00ff', color: '#cc00ff', background: 'rgba(204,0,255,0.08)', boxShadow: '0 0 20px rgba(204,0,255,0.3)' }}>
+            ██ CLASSIFIED ██
+          </div>
+          <div
+            className="text-4xl sm:text-6xl font-black tracking-tight leading-none"
+            style={{
+              color: glitch ? '#ff5f57' : 'var(--green)',
+              textShadow: glitch
+                ? '3px 0 #cc00ff, -3px 0 var(--cyan), 0 0 40px #ff5f57'
+                : '0 0 40px var(--green), 0 0 80px rgba(0,255,65,0.3)',
+              transition: 'color 0.05s, text-shadow 0.05s',
+              transform: glitch ? 'skewX(-2deg)' : 'none',
+            }}
+          >
+            ELITE<br />OPERATOR
+          </div>
+        </div>
+
+        {/* Terminal output */}
+        <div className="rounded-lg p-4 space-y-1" style={{ background: 'rgba(0,10,0,0.9)', border: '1px solid var(--border)' }}>
+          {DEBRIEF_LINES.slice(0, visibleLines).map((line, i) => (
+            <div key={i} className="text-xs" style={{
+              color: line.startsWith('──') ? 'rgba(0,255,65,0.3)' : line.includes('CLASSIFIED') ? '#cc00ff' : line.includes('SELF-DESTRUCT') ? '#ff5f57' : line.includes('kidding') ? '#febc2e' : 'var(--green)',
+              fontWeight: line.includes('CLASSIFIED') ? 700 : 400,
+            }}>{line}</div>
+          ))}
+          {visibleLines < DEBRIEF_LINES.length && (
+            <div className="text-xs" style={{ color: 'var(--green)' }}>▋</div>
+          )}
+        </div>
+
+        {/* Stats card */}
+        {showStats && (
+          <div className="rounded-lg p-4 space-y-3" style={{ border: '1px solid rgba(0,255,65,0.4)', background: 'rgba(0,20,0,0.8)', boxShadow: '0 0 30px rgba(0,255,65,0.1)' }}>
+            <div className="text-xs tracking-widest" style={{ color: 'var(--text-muted)' }}>// OPERATOR DOSSIER</div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <div className="text-xs" style={{ color: 'var(--text-muted)' }}>CALLSIGN</div>
+                <div className="text-sm font-bold" style={{ color: 'var(--cyan)' }}>op://{operator.callsign}</div>
+              </div>
+              <div>
+                <div className="text-xs" style={{ color: 'var(--text-muted)' }}>CLEARANCE</div>
+                <div className="text-sm font-bold" style={{ color: clearanceColor }}>{clearanceLevel}</div>
+              </div>
+              <div>
+                <div className="text-xs" style={{ color: 'var(--text-muted)' }}>FINAL SCORE</div>
+                <div className="text-2xl font-black" style={{ color: '#ffd700', textShadow: '0 0 20px #ffd70080' }}>{operator.score} pts</div>
+              </div>
+              <div>
+                <div className="text-xs" style={{ color: 'var(--text-muted)' }}>FLAGS CAPTURED</div>
+                <div className="text-2xl font-black" style={{ color: 'var(--green)' }}>{operator.solved.length}/8</div>
+              </div>
+              {rank !== null && (
+                <div>
+                  <div className="text-xs" style={{ color: 'var(--text-muted)' }}>GLOBAL RANK</div>
+                  <div className="text-2xl font-black" style={{ color: rank <= 3 ? '#ffd700' : 'var(--text)' }}>#{rank}</div>
+                </div>
+              )}
+              <div>
+                <div className="text-xs" style={{ color: 'var(--text-muted)' }}>HINTS USED</div>
+                <div className="text-2xl font-black" style={{ color: Object.keys(operator.hintsUsed).length === 0 ? 'var(--green)' : '#febc2e' }}>
+                  {Object.keys(operator.hintsUsed).length === 0 ? 'NONE 🔥' : Object.keys(operator.hintsUsed).length}
+                </div>
+              </div>
+            </div>
+            {Object.keys(operator.hintsUsed).length === 0 && (
+              <div className="text-xs text-center py-1 rounded" style={{ color: 'var(--green)', border: '1px solid rgba(0,255,65,0.3)', background: 'rgba(0,255,65,0.05)' }}>
+                ★ FLAWLESS — No hints used
+              </div>
+            )}
+            <button
+              onClick={onDismiss}
+              className="w-full py-2.5 rounded font-bold text-sm transition-all hover:scale-[1.02] mt-2"
+              style={{ background: 'var(--green)', color: 'var(--bg)', boxShadow: '0 0 20px rgba(0,255,65,0.4)' }}>
+              {'>'} VIEW LEADERBOARD
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 // ── Auto-redirect countdown ─────────────────────────────────────────────────
 const AutoRedirect = ({ onDone }: { onDone: () => void }) => {
   const [secs, setSecs] = useState(3)
@@ -118,6 +254,8 @@ const RedTeamCTF = () => {
   const [showLeader, setShowLeader] = useState(false)
   const [mobileView, setMobileView] = useState<'list' | 'sandbox'>('list')
   const [celebration, setCelebration] = useState<{ title: string; pts: number; next: ChallengeId | null } | null>(null)
+  const [showDebrief, setShowDebrief] = useState(false)
+  const [debriefRank, setDebriefRank] = useState<number | null>(null)
 
   // Auto-login + sync to Firestore
   useEffect(() => {
@@ -227,8 +365,16 @@ const RedTeamCTF = () => {
       !newOp.solved.includes(c.id) &&
       (!c.unlockAfter || newOp.solved.includes(c.unlockAfter))
     ) ?? null
+    const isAllDone = newOp.solved.length === CHALLENGES.length
     setCelebration({ title: challenge.title, pts, next: nextChallenge?.id ?? null })
-    if (showLeader) setTimeout(fetchLeaderboard, 1500)
+    if (showLeader || isAllDone) setTimeout(() => {
+      getDocs(query(collection(db, 'ctf_operators'), orderBy('score', 'desc'), limit(50)))
+        .then(snap => {
+          const idx = snap.docs.findIndex(d => d.id === newOp.callsign)
+          if (idx !== -1) setDebriefRank(idx + 1)
+          setLeaderboard(snap.docs.slice(0, 10).map(d => { const data = d.data() as Operator; return { callsign: data.callsign, score: data.score, solved: data.solved.length } }))
+        }).catch(() => {})
+    }, 1500)
     return true
   }, [operator, attempts, cooldowns, showLeader])
 
@@ -270,6 +416,15 @@ const RedTeamCTF = () => {
 
   if (!operator) return <RegisterScreen onRegister={op => setOperator(op)} />
 
+  // ── Mission debrief (all flags) ──────────────────────────────────────────
+  if (showDebrief) return (
+    <MissionDebrief
+      operator={operator}
+      rank={debriefRank}
+      onDismiss={() => { setShowDebrief(false); setShowLeader(true) }}
+    />
+  )
+
   // ── Celebration overlay ──────────────────────────────────────────────────
   if (celebration) {
     const lines = ['ACCESS GRANTED', 'FLAG CAPTURED', 'SYSTEM COMPROMISED', '> HACK SUCCESSFUL_']
@@ -300,6 +455,7 @@ const RedTeamCTF = () => {
             onClick={() => {
               setCelebration(null)
               if (celebration.next) selectChallenge(celebration.next)
+              else setShowDebrief(true)
             }}
             className="mt-2 px-6 py-2 rounded font-bold text-sm transition-all hover:scale-105"
             style={{ background: 'var(--green)', color: 'var(--bg)', boxShadow: '0 0 20px rgba(0,255,65,0.4)' }}>
