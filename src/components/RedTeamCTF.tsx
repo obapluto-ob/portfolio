@@ -111,8 +111,9 @@ const DEBRIEF_LINES = [
 
 const MissionDebrief = ({ operator, rank, onDismiss }: { operator: Operator; rank: number | null; onDismiss: () => void }) => {
   const [visibleLines, setVisibleLines] = useState(0)
-  const [glitch, setGlitch] = useState(false)
   const [showStats, setShowStats] = useState(false)
+  const [tilt, setTilt] = useState({ x: 0, y: 0 })
+  const cardRef = useRef<HTMLDivElement>(null)
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
@@ -124,102 +125,148 @@ const MissionDebrief = ({ operator, rank, onDismiss }: { operator: Operator; ran
     return () => { if (timerRef.current) clearTimeout(timerRef.current) }
   }, [visibleLines])
 
-  useEffect(() => {
-    const interval = setInterval(() => { setGlitch(true); setTimeout(() => setGlitch(false), 120) }, 3000)
-    return () => clearInterval(interval)
-  }, [])
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const el = cardRef.current
+    if (!el) return
+    const { left, top, width, height } = el.getBoundingClientRect()
+    const x = ((e.clientY - top) / height - 0.5) * -16
+    const y = ((e.clientX - left) / width - 0.5) * 16
+    setTilt({ x, y })
+  }
 
   const clearanceLevel = operator.score >= 2000 ? 'LEVEL 5 — ELITE' : operator.score >= 1500 ? 'LEVEL 4 — SENIOR' : operator.score >= 1000 ? 'LEVEL 3 — OPERATIVE' : 'LEVEL 2 — RECRUIT'
   const clearanceColor = operator.score >= 2000 ? '#cc00ff' : operator.score >= 1500 ? '#ff5f57' : operator.score >= 1000 ? '#febc2e' : 'var(--green)'
+  const flawless = Object.keys(operator.hintsUsed).length === 0
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center font-mono overflow-auto py-8"
-      style={{ background: 'rgba(0,0,0,0.98)' }}>
+    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center font-mono overflow-auto py-8">
+      {/* Real cybersecurity background image */}
+      <div className="absolute inset-0" style={{
+        backgroundImage: 'url(https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=1600&q=80)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        filter: 'brightness(0.18) saturate(0.4) hue-rotate(80deg)',
+      }} />
+      {/* Green tint overlay */}
+      <div className="absolute inset-0" style={{ background: 'linear-gradient(135deg, rgba(0,20,0,0.85) 0%, rgba(0,5,0,0.92) 100%)' }} />
       {/* Scanlines */}
       <div className="absolute inset-0 pointer-events-none" style={{
         backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,65,0.025) 2px, rgba(0,255,65,0.025) 4px)'
       }} />
 
       <div className="relative z-10 w-full max-w-lg px-4 space-y-4">
-        {/* Glitch badge */}
+        {/* Glitch title using existing CSS class */}
         <div className="text-center mb-2">
           <div className="inline-block px-4 py-1 rounded text-xs tracking-widest font-bold mb-3"
-            style={{ border: '1px solid #cc00ff', color: '#cc00ff', background: 'rgba(204,0,255,0.08)', boxShadow: '0 0 20px rgba(204,0,255,0.3)' }}>
-            ██ CLASSIFIED ██
+            style={{ border: '1px solid #cc00ff', color: '#cc00ff', background: 'rgba(204,0,255,0.08)', boxShadow: '0 0 20px rgba(204,0,255,0.3)', letterSpacing: '0.3em' }}>
+            [ CLASSIFIED — EYES ONLY ]
           </div>
           <div
-            className="text-4xl sm:text-6xl font-black tracking-tight leading-none"
-            style={{
-              color: glitch ? '#ff5f57' : 'var(--green)',
-              textShadow: glitch
-                ? '3px 0 #cc00ff, -3px 0 var(--cyan), 0 0 40px #ff5f57'
-                : '0 0 40px var(--green), 0 0 80px rgba(0,255,65,0.3)',
-              transition: 'color 0.05s, text-shadow 0.05s',
-              transform: glitch ? 'skewX(-2deg)' : 'none',
-            }}
+            className="glitch text-4xl sm:text-6xl font-black tracking-tight leading-none"
+            data-text="ELITE OPERATOR"
+            style={{ color: 'var(--green)', textShadow: '0 0 40px var(--green), 0 0 80px rgba(0,255,65,0.3)' }}
           >
-            ELITE<br />OPERATOR
+            ELITE OPERATOR
           </div>
         </div>
 
         {/* Terminal output */}
-        <div className="rounded-lg p-4 space-y-1" style={{ background: 'rgba(0,10,0,0.9)', border: '1px solid var(--border)' }}>
+        <div className="rounded-lg p-4 space-y-1 scan-sweep" style={{ background: 'rgba(0,8,0,0.92)', border: '1px solid var(--border)' }}>
           {DEBRIEF_LINES.slice(0, visibleLines).map((line, i) => (
             <div key={i} className="text-xs" style={{
-              color: line.startsWith('──') ? 'rgba(0,255,65,0.3)' : line.includes('CLASSIFIED') ? '#cc00ff' : line.includes('SELF-DESTRUCT') ? '#ff5f57' : line.includes('kidding') ? '#febc2e' : 'var(--green)',
+              color: line.startsWith('──') ? 'rgba(0,255,65,0.25)' : line.includes('CLASSIFIED') ? '#cc00ff' : line.includes('SELF-DESTRUCT') ? '#ff5f57' : line.includes('kidding') ? '#febc2e' : 'var(--green)',
               fontWeight: line.includes('CLASSIFIED') ? 700 : 400,
             }}>{line}</div>
           ))}
-          {visibleLines < DEBRIEF_LINES.length && (
-            <div className="text-xs" style={{ color: 'var(--green)' }}>▋</div>
-          )}
+          {visibleLines < DEBRIEF_LINES.length && <div className="cursor text-xs" style={{ color: 'var(--green)' }} />}
         </div>
 
-        {/* Stats card */}
+        {/* 3D tilt dossier card */}
         {showStats && (
-          <div className="rounded-lg p-4 space-y-3" style={{ border: '1px solid rgba(0,255,65,0.4)', background: 'rgba(0,20,0,0.8)', boxShadow: '0 0 30px rgba(0,255,65,0.1)' }}>
-            <div className="text-xs tracking-widest" style={{ color: 'var(--text-muted)' }}>// OPERATOR DOSSIER</div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <div className="text-xs" style={{ color: 'var(--text-muted)' }}>CALLSIGN</div>
-                <div className="text-sm font-bold" style={{ color: 'var(--cyan)' }}>op://{operator.callsign}</div>
+          <div
+            ref={cardRef}
+            onMouseMove={handleMouseMove}
+            onMouseLeave={() => setTilt({ x: 0, y: 0 })}
+            style={{
+              perspective: '800px',
+              transformStyle: 'preserve-3d',
+            }}
+          >
+            <div style={{
+              transform: `rotateX(${tilt.x}deg) rotateY(${tilt.y}deg) translateZ(0)`,
+              transition: tilt.x === 0 ? 'transform 0.6s ease' : 'transform 0.1s ease',
+              transformStyle: 'preserve-3d',
+              borderRadius: '12px',
+              padding: '1rem',
+              background: 'rgba(0,18,0,0.92)',
+              border: '1px solid rgba(0,255,65,0.4)',
+              boxShadow: `0 ${20 + Math.abs(tilt.x)}px ${40 + Math.abs(tilt.y) * 2}px rgba(0,0,0,0.8), 0 0 40px rgba(0,255,65,0.08), inset 0 1px 0 rgba(0,255,65,0.1)`,
+            }}>
+              {/* Floating image strip — circuit board */}
+              <div style={{
+                width: '100%', height: 80, borderRadius: 8, marginBottom: 12, overflow: 'hidden',
+                transform: 'translateZ(20px)',
+                boxShadow: '0 8px 24px rgba(0,0,0,0.6)',
+              }}>
+                <img
+                  src="https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800&q=80"
+                  alt="circuit"
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'brightness(0.5) saturate(0.3) hue-rotate(90deg)', display: 'block' }}
+                />
+                <div style={{
+                  position: 'absolute', inset: 0, top: 0,
+                  background: 'linear-gradient(90deg, rgba(0,255,65,0.15), transparent, rgba(0,255,65,0.15))',
+                  mixBlendMode: 'screen',
+                }} />
               </div>
-              <div>
-                <div className="text-xs" style={{ color: 'var(--text-muted)' }}>CLEARANCE</div>
-                <div className="text-sm font-bold" style={{ color: clearanceColor }}>{clearanceLevel}</div>
-              </div>
-              <div>
-                <div className="text-xs" style={{ color: 'var(--text-muted)' }}>FINAL SCORE</div>
-                <div className="text-2xl font-black" style={{ color: '#ffd700', textShadow: '0 0 20px #ffd70080' }}>{operator.score} pts</div>
-              </div>
-              <div>
-                <div className="text-xs" style={{ color: 'var(--text-muted)' }}>FLAGS CAPTURED</div>
-                <div className="text-2xl font-black" style={{ color: 'var(--green)' }}>{operator.solved.length}/8</div>
-              </div>
-              {rank !== null && (
+
+              <div className="text-xs tracking-widest mb-3" style={{ color: 'var(--text-muted)', transform: 'translateZ(10px)' }}>// OPERATOR DOSSIER</div>
+
+              <div className="grid grid-cols-2 gap-3" style={{ transform: 'translateZ(15px)' }}>
                 <div>
-                  <div className="text-xs" style={{ color: 'var(--text-muted)' }}>GLOBAL RANK</div>
-                  <div className="text-2xl font-black" style={{ color: rank <= 3 ? '#ffd700' : 'var(--text)' }}>#{rank}</div>
+                  <div className="text-xs" style={{ color: 'var(--text-muted)' }}>CALLSIGN</div>
+                  <div className="text-sm font-bold" style={{ color: 'var(--cyan)' }}>op://{operator.callsign}</div>
+                </div>
+                <div>
+                  <div className="text-xs" style={{ color: 'var(--text-muted)' }}>CLEARANCE</div>
+                  <div className="text-sm font-bold" style={{ color: clearanceColor }}>{clearanceLevel}</div>
+                </div>
+                <div>
+                  <div className="text-xs" style={{ color: 'var(--text-muted)' }}>FINAL SCORE</div>
+                  <div className="text-2xl font-black" style={{ color: '#ffd700', textShadow: '0 0 20px #ffd70080' }}>{operator.score} pts</div>
+                </div>
+                <div>
+                  <div className="text-xs" style={{ color: 'var(--text-muted)' }}>FLAGS CAPTURED</div>
+                  <div className="text-2xl font-black" style={{ color: 'var(--green)' }}>{operator.solved.length}/{CHALLENGES.length}</div>
+                </div>
+                {rank !== null && (
+                  <div>
+                    <div className="text-xs" style={{ color: 'var(--text-muted)' }}>GLOBAL RANK</div>
+                    <div className="text-2xl font-black" style={{ color: rank <= 3 ? '#ffd700' : 'var(--text)' }}>#{rank}</div>
+                  </div>
+                )}
+                <div>
+                  <div className="text-xs" style={{ color: 'var(--text-muted)' }}>HINTS USED</div>
+                  <div className="text-2xl font-black" style={{ color: flawless ? 'var(--green)' : '#febc2e' }}>
+                    {flawless ? 'NONE' : Object.keys(operator.hintsUsed).length}
+                  </div>
+                </div>
+              </div>
+
+              {flawless && (
+                <div className="text-xs text-center py-1.5 rounded mt-3 font-bold tracking-widest"
+                  style={{ color: 'var(--green)', border: '1px solid rgba(0,255,65,0.4)', background: 'rgba(0,255,65,0.06)', transform: 'translateZ(20px)', letterSpacing: '0.2em' }}>
+                  [ FLAWLESS — ZERO HINTS ]
                 </div>
               )}
-              <div>
-                <div className="text-xs" style={{ color: 'var(--text-muted)' }}>HINTS USED</div>
-                <div className="text-2xl font-black" style={{ color: Object.keys(operator.hintsUsed).length === 0 ? 'var(--green)' : '#febc2e' }}>
-                  {Object.keys(operator.hintsUsed).length === 0 ? 'NONE 🔥' : Object.keys(operator.hintsUsed).length}
-                </div>
-              </div>
+
+              <button
+                onClick={onDismiss}
+                className="w-full py-2.5 rounded font-bold text-sm transition-all hover:scale-[1.02] mt-3"
+                style={{ background: 'var(--green)', color: 'var(--bg)', boxShadow: '0 0 20px rgba(0,255,65,0.4)', transform: 'translateZ(25px)', letterSpacing: '0.1em' }}>
+                {'>'} VIEW LEADERBOARD
+              </button>
             </div>
-            {Object.keys(operator.hintsUsed).length === 0 && (
-              <div className="text-xs text-center py-1 rounded" style={{ color: 'var(--green)', border: '1px solid rgba(0,255,65,0.3)', background: 'rgba(0,255,65,0.05)' }}>
-                ★ FLAWLESS — No hints used
-              </div>
-            )}
-            <button
-              onClick={onDismiss}
-              className="w-full py-2.5 rounded font-bold text-sm transition-all hover:scale-[1.02] mt-2"
-              style={{ background: 'var(--green)', color: 'var(--bg)', boxShadow: '0 0 20px rgba(0,255,65,0.4)' }}>
-              {'>'} VIEW LEADERBOARD
-            </button>
           </div>
         )}
       </div>
