@@ -91,6 +91,21 @@ const RegisterScreen = ({ onRegister }: { onRegister: (op: Operator) => void }) 
   )
 }
 
+// ── Auto-redirect countdown ─────────────────────────────────────────────────
+const AutoRedirect = ({ onDone }: { onDone: () => void }) => {
+  const [secs, setSecs] = useState(3)
+  useEffect(() => {
+    if (secs <= 0) { onDone(); return }
+    const t = setTimeout(() => setSecs(s => s - 1), 1000)
+    return () => clearTimeout(t)
+  }, [secs])
+  return (
+    <div className="absolute bottom-8 text-xs font-mono" style={{ color: 'var(--text-muted)' }}>
+      Auto-advancing in {secs}s...
+    </div>
+  )
+}
+
 // ── Main CTF ───────────────────────────────────────────────────────────────
 const RedTeamCTF = () => {
   const [operator, setOperator] = useState<Operator | null>(null)
@@ -101,8 +116,8 @@ const RedTeamCTF = () => {
   const [unlockedHints, setUnlockedHints] = useState<Record<string, number>>({})
   const [leaderboard, setLeaderboard] = useState<LeaderEntry[]>([])
   const [showLeader, setShowLeader] = useState(false)
-  // mobile: 'list' shows challenge list, 'sandbox' shows active challenge
   const [mobileView, setMobileView] = useState<'list' | 'sandbox'>('list')
+  const [celebration, setCelebration] = useState<{ title: string; pts: number; next: ChallengeId | null } | null>(null)
 
   // Auto-login + sync to Firestore
   useEffect(() => {
@@ -207,9 +222,13 @@ const RedTeamCTF = () => {
     saveOperator(newOp)
     setFeedback({ msg: `FLAG CAPTURED! +${pts} pts`, ok: true })
     setAttempts(p => ({ ...p, [id]: 0 }))
-    if (showLeader) {
-      setTimeout(fetchLeaderboard, 1500)
-    }
+    // find next unsolved unlocked challenge
+    const nextChallenge = CHALLENGES.find(c =>
+      !newOp.solved.includes(c.id) &&
+      (!c.unlockAfter || newOp.solved.includes(c.unlockAfter))
+    ) ?? null
+    setCelebration({ title: challenge.title, pts, next: nextChallenge?.id ?? null })
+    if (showLeader) setTimeout(fetchLeaderboard, 1500)
     return true
   }, [operator, attempts, cooldowns, showLeader])
 
@@ -250,6 +269,48 @@ const RedTeamCTF = () => {
   }
 
   if (!operator) return <RegisterScreen onRegister={op => setOperator(op)} />
+
+  // ── Celebration overlay ──────────────────────────────────────────────────
+  if (celebration) {
+    const lines = ['ACCESS GRANTED', 'FLAG CAPTURED', 'SYSTEM COMPROMISED', '> HACK SUCCESSFUL_']
+    return (
+      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center font-mono"
+        style={{ background: 'rgba(0,0,0,0.97)' }}>
+        {/* Scanline effect */}
+        <div className="absolute inset-0 pointer-events-none" style={{
+          backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,65,0.03) 2px, rgba(0,255,65,0.03) 4px)'
+        }} />
+        <div className="text-center space-y-4 px-6 relative z-10">
+          <div className="text-xs tracking-widest mb-2" style={{ color: 'var(--text-muted)' }}>CHALLENGE COMPLETE</div>
+          <div className="text-3xl sm:text-5xl font-black tracking-tight" style={{
+            color: 'var(--green)',
+            textShadow: '0 0 30px var(--green), 0 0 60px rgba(0,255,65,0.4)'
+          }}>HACK<br />SUCCESS</div>
+          <div className="text-sm font-bold" style={{ color: 'var(--cyan)' }}>{celebration.title}</div>
+          <div className="text-2xl font-black" style={{ color: '#ffd700', textShadow: '0 0 20px #ffd70080' }}>+{celebration.pts} pts</div>
+          <div className="space-y-1 py-2">
+            {lines.map((l, i) => (
+              <div key={i} className="text-xs" style={{ color: 'var(--green)', opacity: 0.6 + i * 0.1 }}>{l}</div>
+            ))}
+          </div>
+          <div className="text-xs" style={{ color: 'var(--text-muted)' }}>
+            {celebration.next ? 'Loading next challenge...' : 'All challenges complete!'}
+          </div>
+          <button
+            onClick={() => {
+              setCelebration(null)
+              if (celebration.next) selectChallenge(celebration.next)
+            }}
+            className="mt-2 px-6 py-2 rounded font-bold text-sm transition-all hover:scale-105"
+            style={{ background: 'var(--green)', color: 'var(--bg)', boxShadow: '0 0 20px rgba(0,255,65,0.4)' }}>
+            {celebration.next ? '> NEXT CHALLENGE' : '> VIEW RESULTS'}
+          </button>
+        </div>
+        {/* Auto-redirect */}
+        {celebration.next && <AutoRedirect onDone={() => { setCelebration(null); selectChallenge(celebration.next!) }} />}
+      </div>
+    )
+  }
 
   const totalPoints = operator.score
 

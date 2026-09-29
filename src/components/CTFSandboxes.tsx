@@ -154,7 +154,6 @@ export const TerminalSandbox = ({ onCorrect, solved }: SandboxProps) => {
         setLines(p => [...p, { text: `shift ${String(s).padStart(2, '0')}: ${caesarDecrypt(text, s)}`, type: 'out' }])
       }
     } else {
-      // last resort: try the raw input as a direct answer
       if (onCorrectRef.current(cmd.trim())) {
         setLines(p => [...p, { text: '✓ FLAG CAPTURED: CTF{caesar_shift_3}', type: 'ok' }])
       } else {
@@ -162,6 +161,30 @@ export const TerminalSandbox = ({ onCorrect, solved }: SandboxProps) => {
       }
     }
     setInput('')
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && input.trim()) { run(input); return }
+    // ArrowUp/Down: history navigation — prevent page scroll
+    if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      const next = histIdx + 1
+      if (next < history.length) {
+        setHistIdx(next)
+        setInput(history[next])
+        // move cursor to end after state update
+        setTimeout(() => { const el = inputRef.current; if (el) { el.selectionStart = el.selectionEnd = el.value.length } }, 0)
+      }
+      return
+    }
+    if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      const next = histIdx - 1
+      if (next < 0) { setHistIdx(-1); setInput('') }
+      else { setHistIdx(next); setInput(history[next]); setTimeout(() => { const el = inputRef.current; if (el) { el.selectionStart = el.selectionEnd = el.value.length } }, 0) }
+      return
+    }
+    // ArrowLeft/Right: let browser handle cursor movement naturally (default behaviour)
   }
 
   return (
@@ -176,11 +199,7 @@ export const TerminalSandbox = ({ onCorrect, solved }: SandboxProps) => {
       <div className="flex items-center gap-2 px-3 py-2" style={{ borderTop: '1px solid var(--border)' }}>
         <span className="text-xs shrink-0" style={{ color: 'var(--green-dim)' }}>$</span>
         <input ref={inputRef} value={input} onChange={e => setInput(e.target.value)}
-          onKeyDown={e => {
-            if (e.key === 'Enter' && input.trim()) run(input)
-            if (e.key === 'ArrowUp') { const h = history[histIdx + 1]; if (h) { setInput(h); setHistIdx(i => i + 1) } }
-            if (e.key === 'ArrowDown') { const h = history[histIdx - 1]; setInput(h ?? ''); setHistIdx(i => Math.max(-1, i - 1)) }
-          }}
+          onKeyDown={handleKeyDown}
           placeholder='decode "KDOO KDOO WKH KDFTHU" --shift 3'
           className="flex-1 bg-transparent text-xs outline-none font-mono min-w-0"
           style={{ color: 'var(--green)' }}
@@ -428,6 +447,9 @@ export const ReconSandbox = ({ challenge, onCorrect, solved }: SandboxProps) => 
     { text: isPortscan ? '> Network Recon Terminal v1.0' : '> OSINT Terminal v1.0' },
     { text: '> Type "help" for available commands' },
   ])
+  const [historyR, setHistoryR] = useState<string[]>([])
+  const [histIdxR, setHistIdxR] = useState(-1)
+  const cmdInputRef = useRef<HTMLInputElement>(null)
   const logRef = useRef<HTMLDivElement>(null)
   const onCorrectRef = useRef(onCorrect)
   useEffect(() => { onCorrectRef.current = onCorrect }, [onCorrect])
@@ -435,6 +457,8 @@ export const ReconSandbox = ({ challenge, onCorrect, solved }: SandboxProps) => 
 
   const run = (c: string) => {
     if (solved) return
+    setHistoryR(h => [c, ...h])
+    setHistIdxR(-1)
     const lower = c.trim().toLowerCase()
     setLines(p => [...p, { text: `$ ${c}`, green: true }])
     if (lower === 'help') {
@@ -496,8 +520,22 @@ export const ReconSandbox = ({ challenge, onCorrect, solved }: SandboxProps) => 
       <div className="flex items-center gap-2 px-3 py-2" style={{ borderTop: '1px solid var(--border)', opacity: solved ? 0.4 : 1 }}>
         <span className="text-xs shrink-0" style={{ color: 'var(--green-dim)' }}>$</span>
         <input value={cmd} onChange={e => setCmd(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && cmd.trim() && run(cmd)}
+          onKeyDown={e => {
+            if (e.key === 'Enter' && cmd.trim()) { run(cmd); return }
+            if (e.key === 'ArrowUp') {
+              e.preventDefault()
+              const next = histIdxR + 1
+              if (next < historyR.length) { setHistIdxR(next); setCmd(historyR[next]); setTimeout(() => { const el = cmdInputRef.current; if (el) { el.selectionStart = el.selectionEnd = el.value.length } }, 0) }
+            }
+            if (e.key === 'ArrowDown') {
+              e.preventDefault()
+              const next = histIdxR - 1
+              if (next < 0) { setHistIdxR(-1); setCmd('') }
+              else { setHistIdxR(next); setCmd(historyR[next]); setTimeout(() => { const el = cmdInputRef.current; if (el) { el.selectionStart = el.selectionEnd = el.value.length } }, 0) }
+            }
+          }}
           disabled={solved}
+          ref={cmdInputRef}
           placeholder={isPortscan ? 'nmap 192.168.1.1' : 'github obapluto-ob'}
           className="flex-1 bg-transparent text-xs outline-none font-mono min-w-0"
           style={{ color: 'var(--green)' }} />
