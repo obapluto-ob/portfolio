@@ -192,37 +192,54 @@ export const TerminalSandbox = ({ onCorrect, solved }: SandboxProps) => {
 
 // ── SQL Console Sandbox ────────────────────────────────────────────────────
 export const SQLSandbox = ({ onCorrect, solved }: SandboxProps) => {
-  const [query, setQuery] = useState("SELECT * FROM users WHERE username='' AND password='secret'")
+  const [injection, setInjection] = useState('')
   const [result, setResult] = useState<string | null>(null)
   const [injected, setInjected] = useState(false)
   const onCorrectRef = useRef(onCorrect)
   useEffect(() => { onCorrectRef.current = onCorrect }, [onCorrect])
 
+  const fullQuery = `SELECT * FROM users WHERE username='${injection}' AND password='secret'`
+
   const run = () => {
     if (solved) return
-    const q = query.toLowerCase()
-    // extract just the username injection value to match against ANSWERS
-    const usernameMatch = query.match(/username='([^']*(?:'[^']*)*)/i)
-    const injectedValue = usernameMatch ? "'" + usernameMatch[1] : query
-    const correct = onCorrectRef.current(injectedValue)
+    const q = fullQuery.toLowerCase()
+    const payload = injection.trim() || fullQuery
+    const correct = onCorrectRef.current(payload)
     if (correct || q.includes("or '1'='1") || q.includes('or 1=1') || q.includes("admin'--")) {
       setInjected(true)
       setResult('✓ Query returned ALL rows — authentication bypassed!\n\nid | username | email\n1  | admin    | admin@corp.local\n2  | root     | root@corp.local\n\nFlag: CTF{sql_injection_bypass}')
-    } else if (q.includes('select')) {
-      setResult('0 rows returned — login failed.')
+    } else if (injection.trim()) {
+      setResult('0 rows returned — login failed. Try injecting into the username.')
     } else {
-      setResult('ERROR: Syntax error.')
+      setResult('0 rows returned — login failed.')
     }
   }
 
   return (
     <div className="space-y-3 text-xs font-mono">
-      <div className="rounded p-3" style={{ background: 'rgba(0,0,0,0.5)', border: '1px solid var(--border)' }}>
-        <div style={{ color: 'var(--text-muted)' }} className="mb-2">-- Edit the username value to inject:</div>
-        <textarea value={query} onChange={e => { if (!solved) setQuery(e.target.value) }} rows={3}
-          disabled={solved}
-          className="w-full bg-transparent outline-none resize-none disabled:opacity-50"
-          style={{ color: 'var(--cyan)', caretColor: 'var(--green)' }} />
+      {/* Visual query builder */}
+      <div className="rounded p-3 space-y-2" style={{ background: 'rgba(0,0,0,0.5)', border: '1px solid var(--border)' }}>
+        <div className="text-xs mb-1" style={{ color: 'var(--text-muted)' }}>// Type your injection into the username field:</div>
+        <div className="flex flex-wrap items-center gap-1" style={{ color: 'var(--cyan)' }}>
+          <span style={{ color: 'var(--text-dim)' }}>SELECT * FROM users WHERE username=</span>
+          <span style={{ color: 'var(--green)' }}>'</span>
+          <input
+            value={injection}
+            onChange={e => { if (!solved) setInjection(e.target.value) }}
+            onKeyDown={e => e.key === 'Enter' && run()}
+            disabled={solved}
+            placeholder="type here..."
+            className="bg-transparent outline-none font-mono disabled:opacity-50"
+            style={{ color: '#febc2e', borderBottom: '1px solid var(--green)', minWidth: 80, width: Math.max(80, injection.length * 8) }}
+            autoFocus
+          />
+          <span style={{ color: 'var(--green)' }}>'</span>
+          <span style={{ color: 'var(--text-dim)' }}>AND password='secret'</span>
+        </div>
+        {/* Full query preview */}
+        <div className="mt-2 p-2 rounded text-xs break-all" style={{ background: 'rgba(0,255,65,0.04)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}>
+          <span style={{ color: 'var(--text-dim)' }}>Preview: </span>{fullQuery}
+        </div>
       </div>
       <button onClick={run} disabled={solved} className="w-full py-2 rounded font-bold transition-all hover:scale-[1.01] disabled:opacity-40"
         style={{ background: 'rgba(0,255,65,0.1)', color: 'var(--green)', border: '1px solid var(--green)' }}>
