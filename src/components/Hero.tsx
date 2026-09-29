@@ -74,19 +74,37 @@ const Hero = () => {
 
       {/* Profile */}
       <div className="relative z-10">
-        <div className="relative w-32 h-32 mx-auto mb-6 group">
-          <div className="absolute inset-0 rounded-full blur-xl opacity-60 group-hover:opacity-90 transition-opacity animate-pulse"
+        {/* Hacker identity card — no image dependency */}
+        <div className="relative w-36 h-36 mx-auto mb-6 group cursor-default">
+          <div className="absolute inset-0 rounded-lg blur-xl opacity-40 group-hover:opacity-70 transition-opacity animate-pulse"
             style={{ background: 'var(--green-glow)' }} />
-          <div className="relative w-32 h-32 rounded-full overflow-hidden border-2"
-            style={{ borderColor: 'var(--green-dim)' }}>
-            <img
-              src="/4992579386737363750_121.jpg"
-              alt={personalInfo.name}
-              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-              onError={(e) => {
-                e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(personalInfo.name)}&size=128&background=003311&color=00ff41&bold=true`
-              }}
-            />
+          <div className="relative w-36 h-36 rounded-lg overflow-hidden flex flex-col items-center justify-center"
+            style={{ background: 'rgba(0,20,0,0.9)', border: '1px solid var(--green-dim)' }}>
+            {/* Scanline overlay */}
+            <div className="absolute inset-0 pointer-events-none" style={{
+              background: 'repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,255,65,0.03) 3px,rgba(0,255,65,0.03) 4px)'
+            }} />
+            {/* Avatar SVG — stylised hacker silhouette */}
+            <svg viewBox="0 0 80 80" className="w-16 h-16 mb-1" aria-hidden="true">
+              {/* Head */}
+              <circle cx="40" cy="26" r="13" fill="none" stroke="#00ff41" strokeWidth="1.5" opacity="0.9"/>
+              {/* Body */}
+              <path d="M18 72 Q18 50 40 48 Q62 50 62 72" fill="none" stroke="#00ff41" strokeWidth="1.5" opacity="0.9"/>
+              {/* Hood lines */}
+              <path d="M27 20 Q28 10 40 8 Q52 10 53 20" fill="none" stroke="#00ff41" strokeWidth="1" opacity="0.5"/>
+              {/* Visor / glasses */}
+              <rect x="29" y="24" width="9" height="5" rx="1" fill="rgba(0,255,65,0.15)" stroke="#00ff41" strokeWidth="1"/>
+              <rect x="42" y="24" width="9" height="5" rx="1" fill="rgba(0,255,65,0.15)" stroke="#00ff41" strokeWidth="1"/>
+              <line x1="38" y1="26.5" x2="42" y2="26.5" stroke="#00ff41" strokeWidth="1"/>
+              {/* Scan line across face */}
+              <line x1="27" y1="31" x2="53" y2="31" stroke="#00ff41" strokeWidth="0.5" opacity="0.3"/>
+              {/* Chest circuit lines */}
+              <line x1="40" y1="48" x2="40" y2="58" stroke="#00ff41" strokeWidth="1" opacity="0.4"/>
+              <line x1="34" y1="54" x2="46" y2="54" stroke="#00ff41" strokeWidth="1" opacity="0.4"/>
+              <circle cx="40" cy="58" r="2" fill="#00ff41" opacity="0.6"/>
+            </svg>
+            <span className="text-xs font-mono" style={{ color: 'var(--green-dim)' }}>OBL_v2</span>
+            <span className="text-xs font-mono mt-0.5" style={{ color: 'var(--text-muted)', fontSize: '9px' }}>IDENTITY VERIFIED</span>
           </div>
         </div>
 

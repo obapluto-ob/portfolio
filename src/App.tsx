@@ -14,6 +14,7 @@ import LiveVisitorCounter from './components/LiveVisitorCounter'
 import EasterEgg from './components/EasterEgg'
 import PerformanceMonitor from './components/PerformanceMonitor'
 import MatrixRain from './components/MatrixRain'
+import RedTeamCTF from './components/RedTeamCTF'
 import analytics from './utils/analytics'
 
 interface PageConfig {
@@ -28,6 +29,7 @@ const pages: PageConfig[] = [
   { component: Projects, name: 'Projects', scrollable: true },
   { component: Professional, name: 'Professional', scrollable: true },
   { component: EngagementNew, name: 'Engage', scrollable: true },
+  { component: RedTeamCTF, name: 'CTF', scrollable: true },
   { component: Sponsor, name: 'Sponsor', scrollable: true },
   { component: AboutEnhanced, name: 'About & Contact', scrollable: true }
 ]
@@ -35,6 +37,7 @@ const pages: PageConfig[] = [
 function App() {
   const [currentPage, setCurrentPage] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
+  const skipLoading = () => setIsLoading(false)
   const currentPageRef = useRef(currentPage)
 
   useEffect(() => {
@@ -98,7 +101,7 @@ function App() {
   }, [])
 
   if (isLoading) {
-    return <LoadingSpinner onDone={() => setIsLoading(false)} />
+    return <LoadingSpinner onDone={skipLoading} />
   }
 
   return (
