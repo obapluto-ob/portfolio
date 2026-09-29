@@ -149,14 +149,14 @@ const RedTeamCTF = () => {
     return solved.has(c.unlockAfter)
   }
 
-  // useCallback so sandbox components always get a stable reference per render
   const handleCorrect = useCallback((id: ChallengeId, input: string): boolean => {
     if (cooldowns[id] && cooldowns[id] > Date.now()) {
       const secs = Math.ceil((cooldowns[id] - Date.now()) / 1000)
       setFeedback({ msg: `Cooldown active — wait ${secs}s`, ok: false })
       return false
     }
-    if (solved.has(id)) return true
+    const alreadySolved = operator?.solved.includes(id) ?? false
+    if (alreadySolved) return true
 
     const correct = ANSWERS[id].some(a => a.toLowerCase() === input.trim().toLowerCase())
     if (!correct) {
@@ -184,8 +184,15 @@ const RedTeamCTF = () => {
     saveOperator(newOp)
     setFeedback({ msg: `FLAG CAPTURED! +${pts} pts`, ok: true })
     setAttempts(p => ({ ...p, [id]: 0 }))
+    if (showLeader) {
+      getDocs(query(collection(db, 'ctf_operators'), orderBy('score', 'desc'), limit(10)))
+        .then(snap => setLeaderboard(snap.docs.map(d => {
+          const data = d.data() as Operator
+          return { callsign: data.callsign, score: data.score, solved: data.solved.length }
+        }))).catch(() => {})
+    }
     return true
-  }, [operator, solved, attempts, cooldowns])
+  }, [operator, attempts, cooldowns, showLeader])
 
   const unlockHint = (challengeId: ChallengeId, level: 1 | 2 | 3) => {
     const key = `${challengeId}_${level}`
@@ -193,7 +200,7 @@ const RedTeamCTF = () => {
     const challenge = CHALLENGES.find(c => c.id === challengeId)!
     const hint = challenge.hints.find(h => h.level === level)!
     setUnlockedHints(p => ({ ...p, [key]: level }))
-    saveOperator({ ...operator!, score: Math.max(0, (operator?.score ?? 0) - hint.cost), hintsUsed: { ...(operator?.hintsUsed ?? {}), [key]: hint.cost } })
+    saveOperator({ ...operator!, score: (operator?.score ?? 0) - hint.cost, hintsUsed: { ...(operator?.hintsUsed ?? {}), [key]: hint.cost } })
   }
 
   const selectChallenge = (id: ChallengeId) => {
@@ -426,16 +433,21 @@ const RedTeamCTF = () => {
           <div className="text-sm font-bold mb-3" style={{ color: 'var(--green)' }}>// GLOBAL LEADERBOARD</div>
           {leaderboard.length === 0
             ? <div className="text-xs" style={{ color: 'var(--text-muted)' }}>No operators yet — be the first!</div>
-            : leaderboard.map((e, i) => (
-              <div key={e.callsign} className="flex items-center gap-3 py-1.5 text-xs" style={{ borderBottom: '1px solid var(--border)' }}>
-                <span className="w-5 text-right shrink-0" style={{ color: i < 3 ? 'var(--green)' : 'var(--text-muted)' }}>{i + 1}.</span>
-                <span className="flex-1 font-bold truncate" style={{ color: e.callsign === operator.callsign ? 'var(--cyan)' : 'var(--text)' }}>
-                  {e.callsign}{e.callsign === operator.callsign ? ' (you)' : ''}
-                </span>
-                <span className="shrink-0" style={{ color: 'var(--green)' }}>{e.score}pts</span>
-                <span className="shrink-0" style={{ color: 'var(--text-muted)' }}>{e.solved}flags</span>
-              </div>
-            ))
+            : leaderboard.map((e, i) => {
+              const isYou = e.callsign === operator.callsign
+              const displayScore = isYou ? operator.score : e.score
+              const displaySolved = isYou ? operator.solved.length : e.solved
+              return (
+                <div key={e.callsign} className="flex items-center gap-3 py-1.5 text-xs" style={{ borderBottom: '1px solid var(--border)' }}>
+                  <span className="w-5 text-right shrink-0" style={{ color: i < 3 ? 'var(--green)' : 'var(--text-muted)' }}>{i + 1}.</span>
+                  <span className="flex-1 font-bold truncate" style={{ color: isYou ? 'var(--cyan)' : 'var(--text)' }}>
+                    {e.callsign}{isYou ? ' (you)' : ''}
+                  </span>
+                  <span className="shrink-0" style={{ color: 'var(--green)' }}>{displayScore}pts</span>
+                  <span className="shrink-0" style={{ color: 'var(--text-muted)' }}>{displaySolved}flags</span>
+                </div>
+              )
+            })
           }
         </div>
       )}

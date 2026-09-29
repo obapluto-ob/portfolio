@@ -18,15 +18,17 @@ export const LoginSandbox = ({ onCorrect, solved }: SandboxProps) => {
   ])
   const [shaking, setShaking] = useState(false)
   const logRef = useRef<HTMLDivElement>(null)
-  // Keep a ref to onCorrect so the attempt function always uses the latest version
+  const pinRef = useRef(pin)
   const onCorrectRef = useRef(onCorrect)
   useEffect(() => { onCorrectRef.current = onCorrect }, [onCorrect])
+  useEffect(() => { pinRef.current = pin }, [pin])
 
   useEffect(() => {
     if (logRef.current) logRef.current.scrollTop = logRef.current.scrollHeight
   }, [log])
 
-  const attempt = (currentPin: string) => {
+  const attempt = () => {
+    const currentPin = pinRef.current
     if (!currentPin || currentPin.length !== 4 || solved) return
     const correct = onCorrectRef.current(currentPin)
     if (correct) {
@@ -50,8 +52,10 @@ export const LoginSandbox = ({ onCorrect, solved }: SandboxProps) => {
         {log.map((l, i) => <div key={i} style={{ color: l.ok ? 'var(--green)' : '#ff5f57' }}>{l.text}</div>)}
       </div>
       <div className={`rounded p-3 ${shaking ? 'animate-pulse' : ''}`}
-        style={{ background: 'rgba(0,20,0,0.6)', border: '1px solid var(--border)' }}>
-        <div className="text-xs mb-3 text-center font-bold" style={{ color: 'var(--green)' }}>ADMIN PANEL — PIN REQUIRED</div>
+        style={{ background: 'rgba(0,20,0,0.6)', border: `1px solid ${solved ? 'var(--green)' : 'var(--border)'}` }}>
+        <div className="text-xs mb-3 text-center font-bold" style={{ color: 'var(--green)' }}>
+          {solved ? '✓ ACCESS GRANTED' : 'ADMIN PANEL — PIN REQUIRED'}
+        </div>
         {/* PIN display */}
         <div className="flex gap-2 justify-center mb-3">
           {[0, 1, 2, 3].map(i => (
@@ -65,17 +69,14 @@ export const LoginSandbox = ({ onCorrect, solved }: SandboxProps) => {
         <div className="grid grid-cols-3 gap-2 max-w-[180px] mx-auto">
           {[1, 2, 3, 4, 5, 6, 7, 8, 9, 'C', 0, '↵'].map((k, i) => (
             <button key={i}
+              disabled={solved}
               onClick={() => {
-                if (k === 'C') {
-                  setPin('')
-                } else if (k === '↵') {
-                  // pass current pin directly to avoid stale closure
-                  setPin(current => { attempt(current); return current })
-                } else if (typeof k === 'number') {
-                  setPin(p => p.length < 4 ? p + k : p)
-                }
+                if (solved) return
+                if (k === 'C') setPin('')
+                else if (k === '↵') attempt()
+                else if (typeof k === 'number') setPin(p => p.length < 4 ? p + k : p)
               }}
-              className="h-10 rounded text-sm font-bold transition-all hover:scale-105 active:scale-95"
+              className="h-10 rounded text-sm font-bold transition-all hover:scale-105 active:scale-95 disabled:opacity-40"
               style={{
                 background: k === '↵' ? 'var(--green)' : 'rgba(0,255,65,0.08)',
                 color: k === '↵' ? 'var(--bg)' : 'var(--green)',
@@ -123,6 +124,7 @@ export const TerminalSandbox = ({ onCorrect, solved }: SandboxProps) => {
     if (c === 'help') {
       setLines(p => [...p,
         { text: 'decode <text> --shift <n>  Decrypt Caesar cipher', type: 'out' },
+        { text: 'submit <answer>            Submit decrypted text directly', type: 'out' },
         { text: 'auto <text>                Try all 25 shifts', type: 'out' },
         { text: 'clear                      Clear terminal', type: 'out' },
       ])
@@ -136,6 +138,15 @@ export const TerminalSandbox = ({ onCorrect, solved }: SandboxProps) => {
       setLines(p => [...p, { text: `Decrypted: ${result}`, type: 'out' }])
       if (onCorrectRef.current(result)) {
         setLines(p => [...p, { text: '✓ FLAG CAPTURED: CTF{caesar_shift_3}', type: 'ok' }])
+      } else {
+        setLines(p => [...p, { text: '> If correct, use: submit ' + result, type: 'out' }])
+      }
+    } else if (c.startsWith('submit ')) {
+      const ans = cmd.replace(/^submit /i, '').trim()
+      if (onCorrectRef.current(ans)) {
+        setLines(p => [...p, { text: '✓ FLAG CAPTURED: CTF{caesar_shift_3}', type: 'ok' }])
+      } else {
+        setLines(p => [...p, { text: '✗ Wrong answer. Try decoding first.', type: 'err' }])
       }
     } else if (c.startsWith('auto ')) {
       const text = cmd.replace(/^auto /i, '').trim()
@@ -143,7 +154,12 @@ export const TerminalSandbox = ({ onCorrect, solved }: SandboxProps) => {
         setLines(p => [...p, { text: `shift ${String(s).padStart(2, '0')}: ${caesarDecrypt(text, s)}`, type: 'out' }])
       }
     } else {
-      setLines(p => [...p, { text: `Command not found: ${cmd}. Type "help".`, type: 'err' }])
+      // last resort: try the raw input as a direct answer
+      if (onCorrectRef.current(cmd.trim())) {
+        setLines(p => [...p, { text: '✓ FLAG CAPTURED: CTF{caesar_shift_3}', type: 'ok' }])
+      } else {
+        setLines(p => [...p, { text: `Command not found: ${cmd}. Type "help" or use: submit <answer>`, type: 'err' }])
+      }
     }
     setInput('')
   }
@@ -229,24 +245,24 @@ export const HashSandbox = ({ onCorrect, solved }: SandboxProps) => {
   useEffect(() => { if (logRef.current) logRef.current.scrollTop = logRef.current.scrollHeight }, [log])
 
   const crack = () => {
-    if (!input.trim() || cracking) return
+    if (!input.trim() || cracking || solved) return
     setCracking(true)
-    const wordlist = ['123456', 'admin', 'letmein', 'qwerty', input.trim(), 'password']
+    const guess = input.trim()
+    const wordlist = ['123456', 'admin', 'letmein', 'qwerty', guess]
     let i = 0
     const interval = setInterval(() => {
-      if (i < wordlist.length) {
-        const word = wordlist[i]
-        setLog(p => [...p, `> Testing: "${word}"...`])
-        if (word === input.trim() && onCorrectRef.current(word)) {
-          setLog(p => [...p, `> MATCH FOUND: "${word}"`, '> Flag: CTF{md5_is_dead_use_bcrypt}'])
-          clearInterval(interval)
-          setCracking(false)
-        } else if (i === wordlist.length - 1) {
-          setLog(p => [...p, '> Not in wordlist. Try another word.'])
-          clearInterval(interval)
-          setCracking(false)
-        }
-        i++
+      if (i >= wordlist.length) { clearInterval(interval); setCracking(false); return }
+      const word = wordlist[i]
+      i++
+      setLog(p => [...p, `> Testing: "${word}"...`])
+      if (onCorrectRef.current(word)) {
+        setLog(p => [...p, `> MATCH FOUND: "${word}"`, '> Flag: CTF{md5_is_dead_use_bcrypt}'])
+        clearInterval(interval)
+        setCracking(false)
+      } else if (i === wordlist.length) {
+        setLog(p => [...p, '> Not in wordlist. Try another word.'])
+        clearInterval(interval)
+        setCracking(false)
       }
     }, 300)
   }
@@ -262,7 +278,7 @@ export const HashSandbox = ({ onCorrect, solved }: SandboxProps) => {
           placeholder="Enter a word to test..."
           className="flex-1 px-3 py-2 rounded outline-none font-mono text-xs min-w-0"
           style={{ background: 'rgba(0,255,65,0.05)', border: '1px solid var(--border)', color: 'var(--green)' }} />
-        <button onClick={crack} disabled={cracking}
+        <button onClick={crack} disabled={cracking || solved}
           className="px-4 py-2 rounded font-bold transition-all hover:scale-105 disabled:opacity-50 shrink-0"
           style={{ background: 'var(--green)', color: 'var(--bg)' }}>
           {cracking ? '...' : 'CRACK'}
@@ -284,7 +300,7 @@ export const XSSSandbox = ({ onCorrect, solved }: SandboxProps) => {
   useEffect(() => { onCorrectRef.current = onCorrect }, [onCorrect])
 
   const post = () => {
-    if (!payload.trim()) return
+    if (!payload.trim() || solved) return
     const isXSS = payload.toLowerCase().includes('<script>') && payload.toLowerCase().includes('alert')
     setComments(p => [...p, { user: 'you', text: payload }])
     if (isXSS) {
@@ -318,7 +334,7 @@ export const XSSSandbox = ({ onCorrect, solved }: SandboxProps) => {
           placeholder="Post a comment... (try injecting a script)"
           className="flex-1 px-3 py-2 rounded outline-none font-mono text-xs min-w-0"
           style={{ background: 'rgba(0,255,65,0.05)', border: '1px solid var(--border)', color: 'var(--green)' }} />
-        <button onClick={post} className="px-3 py-2 rounded font-bold transition-all hover:scale-105 shrink-0"
+        <button onClick={post} disabled={solved} className="px-3 py-2 rounded font-bold transition-all hover:scale-105 disabled:opacity-40 shrink-0"
           style={{ background: 'var(--green)', color: 'var(--bg)' }}>POST</button>
       </div>
     </div>
@@ -334,6 +350,7 @@ export const BinarySandbox = ({ onCorrect, solved }: SandboxProps) => {
   useEffect(() => { onCorrectRef.current = onCorrect }, [onCorrect])
 
   const check = () => {
+    if (solved) return
     setChecked(true)
     onCorrectRef.current(inputs.join(''))
   }
@@ -367,7 +384,7 @@ export const BinarySandbox = ({ onCorrect, solved }: SandboxProps) => {
           })}
         </div>
       </div>
-      <button onClick={check} disabled={!inputs.every(v => v.length > 0)}
+      <button onClick={check} disabled={!inputs.every(v => v.length > 0) || solved}
         className="w-full py-2 rounded font-bold transition-all hover:scale-[1.01] disabled:opacity-40"
         style={{ background: 'rgba(0,255,65,0.1)', color: 'var(--green)', border: '1px solid var(--green)' }}>
         DECODE & SUBMIT
@@ -379,11 +396,12 @@ export const BinarySandbox = ({ onCorrect, solved }: SandboxProps) => {
   )
 }
 
-// ── Recon Sandbox ──────────────────────────────────────────────────────────
-export const ReconSandbox = ({ onCorrect, solved }: SandboxProps) => {
+// ── Recon Sandbox (portscan + osint recon) ────────────────────────────────
+export const ReconSandbox = ({ challenge, onCorrect, solved }: SandboxProps) => {
+  const isPortscan = challenge.id === 'portscan'
   const [cmd, setCmd] = useState('')
   const [lines, setLines] = useState<{ text: string; green?: boolean }[]>([
-    { text: '> OSINT Terminal v1.0' },
+    { text: isPortscan ? '> Network Recon Terminal v1.0' : '> OSINT Terminal v1.0' },
     { text: '> Type "help" for available commands' },
   ])
   const logRef = useRef<HTMLDivElement>(null)
@@ -392,14 +410,17 @@ export const ReconSandbox = ({ onCorrect, solved }: SandboxProps) => {
   useEffect(() => { if (logRef.current) logRef.current.scrollTop = logRef.current.scrollHeight }, [lines])
 
   const run = (c: string) => {
+    if (solved) return
     const lower = c.trim().toLowerCase()
     setLines(p => [...p, { text: `$ ${c}`, green: true }])
     if (lower === 'help') {
       setLines(p => [...p,
-        { text: 'whois <domain>       WHOIS lookup' },
         { text: 'nmap <ip>            Port scan' },
-        { text: 'github <username>    GitHub profile recon' },
-        { text: 'submit <answer>      Submit your flag' },
+        ...(!isPortscan ? [
+          { text: 'whois <domain>       WHOIS lookup' },
+          { text: 'github <username>    GitHub profile recon' },
+        ] : []),
+        { text: 'submit <answer>      Submit your answer' },
       ])
     } else if (lower.startsWith('nmap ')) {
       setLines(p => [...p,
@@ -408,14 +429,15 @@ export const ReconSandbox = ({ onCorrect, solved }: SandboxProps) => {
         { text: '22/tcp  open   ssh' },
         { text: '80/tcp  open   http' },
         { text: '443/tcp open   https' },
+        { text: isPortscan ? '> SSH port identified. Use: submit <port>' : '> Scan complete.' },
       ])
-    } else if (lower.startsWith('whois ')) {
+    } else if (!isPortscan && lower.startsWith('whois ')) {
       setLines(p => [...p,
         { text: 'Registrant: Obed Emoni Lopeyok' },
         { text: 'Country: KE' },
         { text: 'GitHub: github.com/obapluto-ob' },
       ])
-    } else if (lower.startsWith('github ')) {
+    } else if (!isPortscan && lower.startsWith('github ')) {
       const user = c.split(' ')[1]
       setLines(p => [...p,
         { text: `Fetching github.com/${user}...` },
@@ -426,12 +448,12 @@ export const ReconSandbox = ({ onCorrect, solved }: SandboxProps) => {
     } else if (lower.startsWith('submit ')) {
       const ans = c.replace(/^submit /i, '').trim()
       if (onCorrectRef.current(ans)) {
-        setLines(p => [...p, { text: '✓ CORRECT! Flag: CTF{osint_recon_complete}', green: true }])
+        setLines(p => [...p, { text: `✓ CORRECT! Flag: CTF{${isPortscan ? 'nmap_port_22_ssh' : 'osint_recon_complete'}}`, green: true }])
       } else {
         setLines(p => [...p, { text: '✗ Wrong answer. Keep digging.' }])
       }
     } else {
-      setLines(p => [...p, { text: `Command not found: ${c}` }])
+      setLines(p => [...p, { text: `Command not found: ${c}. Type "help".` }])
     }
     setCmd('')
   }
@@ -441,11 +463,12 @@ export const ReconSandbox = ({ onCorrect, solved }: SandboxProps) => {
       <div ref={logRef} className="p-3 text-xs font-mono space-y-0.5 overflow-y-auto" style={{ height: '180px' }}>
         {lines.map((l, i) => <div key={i} style={{ color: l.green ? 'var(--green)' : 'var(--text-dim)' }}>{l.text}</div>)}
       </div>
-      <div className="flex items-center gap-2 px-3 py-2" style={{ borderTop: '1px solid var(--border)' }}>
+      <div className="flex items-center gap-2 px-3 py-2" style={{ borderTop: '1px solid var(--border)', opacity: solved ? 0.4 : 1 }}>
         <span className="text-xs shrink-0" style={{ color: 'var(--green-dim)' }}>$</span>
         <input value={cmd} onChange={e => setCmd(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && cmd.trim() && run(cmd)}
-          placeholder="github obapluto-ob"
+          disabled={solved}
+          placeholder={isPortscan ? 'nmap 192.168.1.1' : 'github obapluto-ob'}
           className="flex-1 bg-transparent text-xs outline-none font-mono min-w-0"
           style={{ color: 'var(--green)' }} />
       </div>
