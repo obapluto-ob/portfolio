@@ -62,7 +62,7 @@ const OpenSourceContributions = () => {
       <div className="bg-slate-800/30 rounded-lg p-6 border border-slate-700">
         <h3 className="text-xl font-medium text-slate-200 mb-6">My Projects</h3>
         <div className="text-center py-8">
-          <p className="text-slate-400 mb-4">Building my first projects at Moringa School</p>
+          <p className="text-slate-400 mb-4">No public repositories found.</p>
           <p className="text-sm text-slate-500">Check back soon for updates!</p>
         </div>
       </div>
@@ -79,8 +79,22 @@ const OpenSourceContributions = () => {
               <h4 className="font-medium text-slate-200">{contrib.name}</h4>
               <div className="flex items-center space-x-3 text-xs text-slate-400">
                 <span>{contrib.language}</span>
-                {contrib.stars > 0 && <span>⭐ {contrib.stars}</span>}
-                {contrib.forks > 0 && <span>🍴 {contrib.forks}</span>}
+                {contrib.stars > 0 && (
+                  <span className="flex items-center gap-1">
+                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                    </svg>
+                    {contrib.stars}
+                  </span>
+                )}
+                {contrib.forks > 0 && (
+                  <span className="flex items-center gap-1">
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
+                    </svg>
+                    {contrib.forks}
+                  </span>
+                )}
               </div>
             </div>
             <p className="text-sm text-slate-400 mb-2">{contrib.description}</p>

@@ -1,8 +1,16 @@
+// Declare gtag for TypeScript
+declare function gtag(command: string, action: string, params?: Record<string, unknown>): void
+
 interface AnalyticsEvent {
   action: string
   category: string
   label?: string
   value?: number
+}
+
+// Sanitize strings before logging to prevent log injection
+function sanitize(value: string): string {
+  return value.replace(/[\r\n\t]/g, ' ').substring(0, 200)
 }
 
 class Analytics {
@@ -17,27 +25,30 @@ class Analytics {
   }
 
   track(event: AnalyticsEvent) {
+    const safe = {
+      action: sanitize(event.action),
+      category: sanitize(event.category),
+      label: event.label ? sanitize(event.label) : undefined,
+      value: event.value
+    }
+
     if (!this.isProduction) {
-      console.log('Analytics Event:', event)
+      // Dev-only — sanitized before logging
+      console.log('Analytics:', safe.action, safe.category, safe.label ?? '')
       return
     }
 
-    // Add your analytics provider here (Google Analytics, Plausible, etc.)
     if (typeof gtag !== 'undefined') {
-      gtag('event', event.action, {
-        event_category: event.category,
-        event_label: event.label,
-        value: event.value
+      gtag('event', safe.action, {
+        event_category: safe.category,
+        event_label: safe.label,
+        value: safe.value
       })
     }
   }
 
   trackPageView(page: string) {
-    this.track({
-      action: 'page_view',
-      category: 'navigation',
-      label: page
-    })
+    this.track({ action: 'page_view', category: 'navigation', label: page })
   }
 
   trackClick(element: string, location?: string) {

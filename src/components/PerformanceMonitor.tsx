@@ -2,35 +2,30 @@ import { useEffect } from 'react'
 
 const PerformanceMonitor = () => {
   useEffect(() => {
-    // Monitor Core Web Vitals
-    const observer = new PerformanceObserver((list) => {
-      for (const entry of list.getEntries()) {
-        if (entry.entryType === 'navigation') {
-          const navEntry = entry as PerformanceNavigationTiming
-          console.log('Page Load Time:', navEntry.loadEventEnd - navEntry.loadEventStart, 'ms')
+    try {
+      const observer = new PerformanceObserver((list) => {
+        for (const entry of list.getEntries()) {
+          if (entry.entryType === 'navigation') {
+            const nav = entry as PerformanceNavigationTiming
+            const loadTime = nav.loadEventEnd - nav.loadEventStart
+            // Sanitized numeric output only — no user input logged
+            if (loadTime > 0) {
+              console.log('Page load time:', loadTime.toFixed(0), 'ms')
+            }
+          }
+          if (entry.entryType === 'paint') {
+            console.log(entry.name + ':', entry.startTime.toFixed(0), 'ms')
+          }
         }
-        
-        if (entry.entryType === 'paint') {
-          console.log(`${entry.name}:`, entry.startTime, 'ms')
-        }
-      }
-    })
-
-    observer.observe({ entryTypes: ['navigation', 'paint'] })
-
-    // Monitor LCP (Largest Contentful Paint)
-    if ('web-vitals' in window) {
-      // This would work with web-vitals library if installed
-      // import { getLCP, getFID, getCLS } from 'web-vitals'
-      // getLCP(console.log)
-      // getFID(console.log)
-      // getCLS(console.log)
+      })
+      observer.observe({ entryTypes: ['navigation', 'paint'] })
+      return () => observer.disconnect()
+    } catch {
+      // PerformanceObserver not supported — ignore silently
     }
-
-    return () => observer.disconnect()
   }, [])
 
-  return null // This component doesn't render anything
+  return null
 }
 
 export default PerformanceMonitor

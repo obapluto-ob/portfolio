@@ -1,128 +1,111 @@
 import React, { useState, useEffect } from 'react'
-import { doc, setDoc, getDoc, onSnapshot, collection, query, where, getDocs, deleteDoc } from 'firebase/firestore'
+import { doc, setDoc, getDoc, onSnapshot, collection, getDocs, deleteDoc } from 'firebase/firestore'
 import { db } from '../firebase'
 
+// Honest visitor counter backed by Firestore.
+// "Online" = sessions that sent a heartbeat in the last 2 minutes.
+// "Views" = unique daily visits tracked server-side via Firestore.
+// Falls back silently if Firebase is unavailable.
+
 const LiveVisitorCounter = () => {
-  const [currentVisitors, setCurrentVisitors] = useState(0)
-  const [totalViews, setTotalViews] = useState(0)
+  const [currentVisitors, setCurrentVisitors] = useState<number | null>(null)
+  const [totalViews, setTotalViews] = useState<number | null>(null)
   const [sessionId] = useState(() => Math.random().toString(36).substring(2, 11))
+  const [visible, setVisible] = useState(false)
 
   useEffect(() => {
-    const trackVisitor = async () => {
+    let heartbeatInterval: ReturnType<typeof setInterval>
+    let countInterval: ReturnType<typeof setInterval>
+    let unsubscribeStats: (() => void) | undefined
+
+    const init = async () => {
       try {
-        // Check if user already visited today
-        const today = new Date().toDateString()
-        const lastVisit = localStorage.getItem('lastVisit')
-        
-        // Add current visitor
+        // Register this session
         await setDoc(doc(db, 'visitors', sessionId), {
-          timestamp: new Date(),
           lastSeen: new Date(),
           active: true
         })
 
-        // Only increment views if new visitor today
+        // Increment daily view count once per day per browser
+        const today = new Date().toDateString()
+        const lastVisit = localStorage.getItem('lastVisit')
         if (lastVisit !== today) {
           const statsRef = doc(db, 'portfolio', 'stats')
           const statsDoc = await getDoc(statsRef)
-          const currentStats = statsDoc.exists() ? statsDoc.data() : { totalViews: 0 }
-          
-          await setDoc(statsRef, {
-            ...currentStats,
-            totalViews: (currentStats.totalViews || 0) + 1,
-            lastUpdated: new Date()
-          }, { merge: true })
-          
+          const current = statsDoc.exists() ? (statsDoc.data().totalViews ?? 0) : 0
+          await setDoc(statsRef, { totalViews: current + 1, lastUpdated: new Date() }, { merge: true })
           localStorage.setItem('lastVisit', today)
         }
 
-      } catch (error) {
-        console.error('Error tracking visitor:', error)
-      }
-    }
+        // Heartbeat
+        heartbeatInterval = setInterval(async () => {
+          try {
+            await setDoc(doc(db, 'visitors', sessionId), { lastSeen: new Date(), active: true }, { merge: true })
+          } catch { /* ignore */ }
+        }, 30_000)
 
-    const updateHeartbeat = async () => {
-      try {
-        await setDoc(doc(db, 'visitors', sessionId), {
-          lastSeen: new Date(),
-          active: true
-        }, { merge: true })
-      } catch (error) {
-        console.error('Error updating heartbeat:', error)
-      }
-    }
+        // Count active sessions (heartbeat < 2 min ago)
+        const countActive = async () => {
+          try {
+            const snap = await getDocs(collection(db, 'visitors'))
+            const now = Date.now()
+            let active = 0
+            const stale: Promise<void>[] = []
+            snap.forEach(d => {
+              const last = d.data().lastSeen?.toDate?.()
+              if (last && now - last.getTime() < 2 * 60_000) {
+                active++
+              } else {
+                stale.push(deleteDoc(d.ref))
+              }
+            })
+            await Promise.all(stale)
+            setCurrentVisitors(active)
+          } catch { /* ignore */ }
+        }
 
-    const countActiveVisitors = async () => {
-      try {
-        const visitorsSnapshot = await getDocs(collection(db, 'visitors'))
-        const now = new Date()
-        let activeCount = 0
-        const cleanupPromises: Promise<void>[] = []
-        
-        visitorsSnapshot.forEach((docSnapshot) => {
-          const data = docSnapshot.data()
-          const lastSeen = data.lastSeen?.toDate()
-          
-          if (lastSeen) {
-            const timeDiff = now.getTime() - lastSeen.getTime()
-            const minutesDiff = timeDiff / (1000 * 60)
-            
-            if (minutesDiff < 2) {
-              activeCount++
-            } else {
-              cleanupPromises.push(deleteDoc(docSnapshot.ref))
-            }
-          }
+        await countActive()
+        countInterval = setInterval(countActive, 15_000)
+
+        // Listen to total views
+        unsubscribeStats = onSnapshot(doc(db, 'portfolio', 'stats'), snap => {
+          if (snap.exists()) setTotalViews(snap.data().totalViews ?? null)
         })
-        
-        // Execute cleanup
-        await Promise.all(cleanupPromises)
-        setCurrentVisitors(activeCount)
-      } catch (error) {
-        console.error('Error counting visitors:', error)
+
+        setVisible(true)
+      } catch {
+        // Firebase unavailable — hide the widget entirely
+        setVisible(false)
       }
     }
 
-    // Track initial visit
-    trackVisitor()
+    init()
 
-    // Update heartbeat every 30 seconds
-    const heartbeatInterval = setInterval(updateHeartbeat, 30000)
-    
-    // Count active visitors every 10 seconds
-    const countInterval = setInterval(countActiveVisitors, 10000)
-    
-    // Initial count
-    countActiveVisitors()
-
-    // Listen to stats changes
-    const unsubscribeStats = onSnapshot(doc(db, 'portfolio', 'stats'), (doc) => {
-      if (doc.exists()) {
-        setTotalViews(doc.data().totalViews || 0)
-      }
-    })
-
-    // Cleanup on unmount
     return () => {
       clearInterval(heartbeatInterval)
       clearInterval(countInterval)
-      unsubscribeStats()
-      
-      // Remove visitor on leave
+      unsubscribeStats?.()
       deleteDoc(doc(db, 'visitors', sessionId)).catch(() => {})
     }
   }, [sessionId])
 
+  if (!visible) return null
+
   return (
-    <div className="fixed bottom-4 right-4 bg-slate-800/90 backdrop-blur-sm border border-slate-600 rounded-lg p-3 text-sm z-50">
+    <div
+      className="fixed bottom-4 right-4 bg-slate-800/90 backdrop-blur-sm border border-slate-600 rounded-lg p-3 text-sm z-50"
+      aria-label="Site visitor statistics"
+    >
       <div className="flex items-center space-x-4">
-        <div className="flex items-center space-x-2">
-          <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-          <span className="text-slate-300">{currentVisitors} online</span>
-        </div>
-        <div className="text-slate-400">
-          {totalViews.toLocaleString()} views
-        </div>
+        {currentVisitors !== null && (
+          <div className="flex items-center space-x-1.5">
+            <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" aria-hidden="true"></span>
+            <span className="text-slate-300">{currentVisitors} online</span>
+          </div>
+        )}
+        {totalViews !== null && (
+          <span className="text-slate-400">{totalViews.toLocaleString()} views</span>
+        )}
       </div>
     </div>
   )

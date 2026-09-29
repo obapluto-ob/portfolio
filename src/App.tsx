@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import Hero from './components/Hero'
 import AboutEnhanced from './components/AboutEnhanced'
 import Skills from './components/Skills'
@@ -13,6 +13,7 @@ import LoadingSpinner from './components/LoadingSpinner'
 import LiveVisitorCounter from './components/LiveVisitorCounter'
 import EasterEgg from './components/EasterEgg'
 import PerformanceMonitor from './components/PerformanceMonitor'
+import MatrixRain from './components/MatrixRain'
 import analytics from './utils/analytics'
 
 interface PageConfig {
@@ -31,20 +32,14 @@ const pages: PageConfig[] = [
   { component: AboutEnhanced, name: 'About & Contact', scrollable: true }
 ]
 
-// Loading duration for initial portfolio load
-const LOADING_DURATION = 1500
-
 function App() {
   const [currentPage, setCurrentPage] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
+  const currentPageRef = useRef(currentPage)
 
-  // Initialize loading state
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false)
-    }, LOADING_DURATION)
-    return () => clearTimeout(timer)
-  }, [])
+    currentPageRef.current = currentPage
+  }, [currentPage])
 
   const nextPage = () => {
     if (currentPage < pages.length - 1) {
@@ -79,24 +74,36 @@ function App() {
     analytics.trackPageView(pages[currentPage].name)
   }, [currentPage])
 
-  // Handle keyboard navigation
+  // Handle keyboard navigation — use ref to avoid stale closure
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowLeft') prevPage()
-      if (e.key === 'ArrowRight') nextPage()
-      if (e.key === 'Escape') goToPage(0)
+      const page = currentPageRef.current
+      if (e.key === 'ArrowLeft' && page > 0) {
+        const newPage = page - 1
+        setCurrentPage(newPage)
+        analytics.trackPageView(pages[newPage].name)
+      }
+      if (e.key === 'ArrowRight' && page < pages.length - 1) {
+        const newPage = page + 1
+        setCurrentPage(newPage)
+        analytics.trackPageView(pages[newPage].name)
+      }
+      if (e.key === 'Escape') {
+        setCurrentPage(0)
+        analytics.trackPageView(pages[0].name)
+      }
     }
-    
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [currentPage])
+  }, [])
 
   if (isLoading) {
-    return <LoadingSpinner />
+    return <LoadingSpinner onDone={() => setIsLoading(false)} />
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white relative overflow-hidden">
+    <div className="min-h-screen text-white relative" style={{ background: 'var(--bg)' }}>
+      <MatrixRain />
       <ScrollProgress currentPage={currentPage} totalPages={pages.length} />
       {/* Skip to content link for accessibility */}
       <a 
@@ -109,7 +116,7 @@ function App() {
       {/* Current Page */}
       <main 
         id="main-content"
-        className={`h-full ${
+        className={`min-h-screen relative z-10 ${
           currentPageConfig.scrollable ? 'overflow-y-auto overflow-x-hidden p-4 sm:p-6 lg:p-8 pb-20' : 'flex items-center justify-center p-4'
         }`}
         role="main"
@@ -122,7 +129,7 @@ function App() {
 
       {/* Navigation Dots */}
       <nav 
-        className="absolute bottom-4 sm:bottom-6 lg:bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-2 sm:space-x-3"
+        className="fixed bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 flex space-x-2 sm:space-x-3 z-50"
         role="navigation"
         aria-label="Page navigation"
       >
@@ -130,38 +137,46 @@ function App() {
           <button
             key={page.name}
             onClick={() => goToPage(index)}
-            className={`w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full transition-colors ${
-              index === currentPage ? 'bg-blue-500' : 'bg-slate-600 hover:bg-slate-500'
-            }`}
+            className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full transition-all"
+            style={{
+              background: index === currentPage ? 'var(--green)' : 'var(--text-muted)',
+              boxShadow: index === currentPage ? '0 0 8px var(--green-glow)' : 'none'
+            }}
             aria-label={`Go to ${page.name} page`}
             aria-current={index === currentPage ? 'page' : undefined}
           />
         ))}
       </nav>
 
-      {/* Navigation Arrows */}
+      {/* Navigation Arrows — z-50 so they sit above main content */}
       {currentPage > 0 && (
         <button
           onClick={prevPage}
-          className="absolute left-2 sm:left-4 lg:left-8 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-white text-xl sm:text-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 rounded p-1 sm:p-2"
+          className="fixed left-2 sm:left-4 lg:left-8 top-1/2 -translate-y-1/2 z-50 focus:outline-none rounded p-3 transition-all hover:scale-110"
+          style={{ color: 'var(--green)', background: 'rgba(0,0,0,0.5)', border: '1px solid var(--border)' }}
           aria-label="Previous page"
         >
-          ←
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
         </button>
       )}
       
       {currentPage < pages.length - 1 && (
         <button
           onClick={nextPage}
-          className="absolute right-2 sm:right-4 lg:right-8 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-white text-xl sm:text-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 rounded p-1 sm:p-2"
+          className="fixed right-2 sm:right-4 lg:right-8 top-1/2 -translate-y-1/2 z-50 focus:outline-none rounded p-3 transition-all hover:scale-110"
+          style={{ color: 'var(--green)', background: 'rgba(0,0,0,0.5)', border: '1px solid var(--border)' }}
           aria-label="Next page"
         >
-          →
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
         </button>
       )}
 
       {/* Page Indicator */}
-      <div className="absolute top-4 sm:top-6 lg:top-8 right-4 sm:right-8 lg:right-16 text-slate-500 text-xs sm:text-sm">
+      <div className="fixed top-4 right-4 sm:right-8 text-xs sm:text-sm font-mono z-50" style={{ color: 'var(--text-dim)' }}>
         {currentPage + 1} / {pages.length}
       </div>
       

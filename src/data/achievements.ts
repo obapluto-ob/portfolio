@@ -12,33 +12,26 @@ export interface BlogPost {
   url?: string
 }
 
-export interface Contribution {
-  project: string
-  description: string
-  impact: string
-  tech: string[]
-}
-
 export const achievements: Achievement[] = [
   {
-    metric: "40%",
-    description: "Faster load times through code optimization",
-    icon: "⚡"
+    metric: "Production",
+    description: "Applications deployed and live",
+    icon: "rocket"
   },
   {
-    metric: "60%",
-    description: "Reduction in bugs through testing practices",
-    icon: "🐛"
+    metric: "Full-stack",
+    description: "Web and mobile development",
+    icon: "zap"
   },
   {
-    metric: "5+",
-    description: "Cross-functional teams collaborated with",
-    icon: "👥"
+    metric: "API",
+    description: "Integrations and REST services built",
+    icon: "link"
   },
   {
-    metric: "100%",
-    description: "Project delivery rate at Moringa School",
-    icon: "🎯"
+    metric: "Open-source",
+    description: "Projects on GitHub",
+    icon: "globe"
   }
 ]
 
@@ -52,7 +45,7 @@ export const blogPosts: BlogPost[] = [
   {
     title: "Django REST API Security",
     excerpt: "Essential security measures every Django developer should implement in production.",
-    readTime: "7 min read", 
+    readTime: "7 min read",
     tags: ["Django", "Python", "Security"]
   },
   {
@@ -60,26 +53,5 @@ export const blogPosts: BlogPost[] = [
     excerpt: "Why starting with mobile design leads to better cross-platform applications.",
     readTime: "4 min read",
     tags: ["Flutter", "Mobile", "UI/UX"]
-  }
-]
-
-export const contributions: Contribution[] = [
-  {
-    project: "React Documentation",
-    description: "Contributed to improving TypeScript examples in official React docs",
-    impact: "Helped 1000+ developers understand React with TypeScript",
-    tech: ["React", "TypeScript", "Documentation"]
-  },
-  {
-    project: "Django Community",
-    description: "Active in Django forums helping solve authentication issues",
-    impact: "Resolved 50+ community questions on Stack Overflow",
-    tech: ["Django", "Python", "Authentication"]
-  },
-  {
-    project: "Open Source Tools",
-    description: "Maintaining utility libraries for African developers",
-    impact: "Used by 20+ projects across Kenya and Nigeria",
-    tech: ["JavaScript", "Node.js", "NPM"]
   }
 ]

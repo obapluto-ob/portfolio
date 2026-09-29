@@ -28,7 +28,11 @@ const RealAchievements = () => {
         const events = await eventsResponse.json()
         
         // Calculate real stats
-        const languages = [...new Set(repos.map((repo: any) => repo.language).filter(Boolean))]
+        const languages: string[] = [...new Set(
+          (repos as { language: string | null }[])
+            .map(r => r.language)
+            .filter((l): l is string => typeof l === 'string')
+        )]
         const recentCommits = events.filter((event: any) => event.type === 'PushEvent').length
         const joinedYear = new Date(userData.created_at).getFullYear()
         

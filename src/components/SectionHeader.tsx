@@ -1,14 +1,29 @@
-import React from 'react'
-
 interface SectionHeaderProps {
   title: string
+  subtitle?: string
   className?: string
 }
 
-const SectionHeader: React.FC<SectionHeaderProps> = ({ title, className = '' }) => {
+const SectionHeader = ({ title, subtitle, className = '' }: SectionHeaderProps) => {
   return (
     <header className={`text-center ${className}`}>
-      <h2 className="text-4xl font-light mb-12 text-slate-300">{title}</h2>
+      <div className="flex items-center justify-center gap-3 mb-2">
+        <div className="h-px flex-1 max-w-16" style={{ background: 'linear-gradient(90deg, transparent, var(--green-dim))' }} />
+        <span className="text-xs font-mono" style={{ color: 'var(--text-dim)' }}>{'<section>'}</span>
+        <div className="h-px flex-1 max-w-16" style={{ background: 'linear-gradient(90deg, var(--green-dim), transparent)' }} />
+      </div>
+      <h2
+        className="text-3xl sm:text-4xl font-bold mb-2 glitch"
+        data-text={title}
+        style={{ color: 'var(--green)', fontFamily: "'JetBrains Mono', monospace" }}
+      >
+        {title}
+      </h2>
+      {subtitle && (
+        <p className="text-sm font-mono" style={{ color: 'var(--text-dim)' }}>
+          <span style={{ color: 'var(--green-dim)' }}>// </span>{subtitle}
+        </p>
+      )}
     </header>
   )
 }

@@ -1,52 +1,114 @@
-import React from 'react'
-import { skillCategories } from '../data/portfolio'
-import LazyImage from './LazyImage'
+import { useState, useEffect } from 'react'
+import SectionHeader from './SectionHeader'
+import HackTerminal from './HackTerminal'
 
-const Skills = () => {
+const SKILLS: { category: string; level: string; items: { name: string; pct: number; tag: string }[] }[] = [
+  {
+    category: 'LANGUAGES',
+    level: 'critical',
+    items: [
+      { name: 'JavaScript', pct: 85, tag: 'EXPERT' },
+      { name: 'TypeScript', pct: 78, tag: 'ADVANCED' },
+      { name: 'Python',     pct: 80, tag: 'EXPERT' },
+      { name: 'Dart',       pct: 60, tag: 'INTERMEDIATE' },
+    ],
+  },
+  {
+    category: 'FRAMEWORKS',
+    level: 'high',
+    items: [
+      { name: 'React',    pct: 85, tag: 'EXPERT' },
+      { name: 'Django',   pct: 70, tag: 'ADVANCED' },
+      { name: 'Flask',    pct: 75, tag: 'ADVANCED' },
+      { name: 'Flutter',  pct: 60, tag: 'INTERMEDIATE' },
+      { name: 'Node.js',  pct: 72, tag: 'ADVANCED' },
+      { name: 'Express',  pct: 70, tag: 'ADVANCED' },
+    ],
+  },
+  {
+    category: 'DATABASES',
+    level: 'medium',
+    items: [
+      { name: 'PostgreSQL', pct: 70, tag: 'ADVANCED' },
+      { name: 'SQLite',     pct: 80, tag: 'EXPERT' },
+      { name: 'MongoDB',    pct: 60, tag: 'INTERMEDIATE' },
+      { name: 'Firebase',   pct: 75, tag: 'ADVANCED' },
+    ],
+  },
+  {
+    category: 'TOOLS & OPS',
+    level: 'low',
+    items: [
+      { name: 'Git',    pct: 82, tag: 'EXPERT' },
+      { name: 'Docker', pct: 55, tag: 'INTERMEDIATE' },
+      { name: 'Linux',  pct: 70, tag: 'ADVANCED' },
+      { name: 'REST APIs', pct: 85, tag: 'EXPERT' },
+    ],
+  },
+]
+
+const tagColor = (tag: string) => {
+  if (tag === 'EXPERT')       return 'threat-critical'
+  if (tag === 'ADVANCED')     return 'threat-high'
+  if (tag === 'INTERMEDIATE') return 'threat-medium'
+  return 'threat-low'
+}
+
+const SkillBar = ({ name, pct, tag }: { name: string; pct: number; tag: string }) => {
+  const [width, setWidth] = useState(0)
+
+  useEffect(() => {
+    const t = setTimeout(() => setWidth(pct), 200)
+    return () => clearTimeout(t)
+  }, [pct])
 
   return (
-    <div className="text-center max-w-6xl mx-auto">
-      <header className="mb-16">
-        <h2 className="text-5xl font-bold mb-4 gradient-text" style={{fontFamily: 'Space Grotesk, sans-serif'}}>Technical Skills</h2>
-        <p className="text-slate-400 text-lg">Technologies I work with daily</p>
-      </header>
-      
-      <div className="space-y-12">
-        {Object.entries(skillCategories).map(([category, skills]) => (
-          <div key={category}>
-            <h3 className="text-2xl font-semibold text-slate-200 mb-8 flex items-center justify-center gap-2">
-              <span className="w-8 h-0.5 bg-gradient-to-r from-transparent to-blue-500"></span>
-              {category}
-              <span className="w-8 h-0.5 bg-gradient-to-l from-transparent to-blue-500"></span>
-            </h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-3xl mx-auto">
-              {skills.map((skill) => (
-                <div key={skill.name} className="glass rounded-2xl p-6 card-hover glow-hover group cursor-pointer">
-                  <div className="flex flex-col items-center space-y-4">
-                    <div className="relative">
-                      <div className="absolute inset-0 bg-blue-500/20 rounded-xl blur-xl group-hover:bg-blue-500/40 transition-all"></div>
-                      <LazyImage
-                        src={skill.icon}
-                        alt={`${skill.name} icon`}
-                        className="relative w-16 h-16 filter brightness-90 group-hover:brightness-110 group-hover:scale-110 transition-all duration-300"
-                        fallback={
-                          <div className="relative w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
-                            <span className="text-white text-lg font-bold">
-                              {skill.name.slice(0, 2).toUpperCase()}
-                            </span>
-                          </div>
-                        }
-                      />
-                    </div>
-                    <span className="text-slate-300 font-medium group-hover:text-white transition-colors">
-                      {skill.name}
-                    </span>
-                  </div>
-                </div>
-              ))}
+    <div className="mb-3">
+      <div className="flex justify-between items-center mb-1">
+        <span className="text-xs font-mono" style={{ color: 'var(--text-body)' }}>{name}</span>
+        <div className="flex items-center gap-2">
+          <span className={`text-xs px-1.5 py-0.5 rounded border font-mono ${tagColor(tag)}`}>{tag}</span>
+          <span className="text-xs font-mono" style={{ color: 'var(--text-dim)' }}>{pct}%</span>
+        </div>
+      </div>
+      <div className="hack-progress h-1.5">
+        <div className="hack-progress-fill" style={{ width: `${width}%` }} />
+      </div>
+    </div>
+  )
+}
+
+const Skills = () => {
+  return (
+    <div className="max-w-5xl mx-auto">
+      <SectionHeader title="SKILL_TREE" subtitle="technical capabilities — access level: full" className="mb-10" />
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+        {SKILLS.map(({ category, level, items }) => (
+          <div key={category} className="glass-bright rounded-lg p-5 card-hover scan-sweep">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-2 h-2 rounded-full" style={{ background: 'var(--green)', boxShadow: '0 0 6px var(--green-glow)' }} />
+              <h3 className="text-sm font-bold font-mono" style={{ color: 'var(--green)' }}>{category}</h3>
+              <span className={`ml-auto text-xs px-2 py-0.5 rounded border font-mono threat-${level}`}>
+                {level.toUpperCase()}
+              </span>
             </div>
+            {items.map(skill => (
+              <SkillBar key={skill.name} {...skill} />
+            ))}
           </div>
         ))}
+      </div>
+
+      {/* Interactive terminal */}
+      <div className="mb-4">
+        <div className="flex items-center gap-2 mb-4">
+          <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: 'var(--green)' }} />
+          <h3 className="text-sm font-bold font-mono" style={{ color: 'var(--green)' }}>
+            INTERACTIVE TERMINAL — try: whoami, skills, projects, scan, nmap
+          </h3>
+        </div>
+        <HackTerminal />
       </div>
     </div>
   )

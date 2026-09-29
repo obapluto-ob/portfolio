@@ -11,7 +11,8 @@ export interface Project {
   technologies: string[]
   githubUrl?: string
   liveUrl?: string
-  image?: string
+  status: 'production' | 'active' | 'archived'
+  featured: boolean
 }
 
 export interface PersonalInfo {
@@ -28,7 +29,7 @@ export interface PersonalInfo {
 export const personalInfo: PersonalInfo = {
   name: "Obed Emoni Lopeyok",
   title: "Full-stack Developer",
-  bio: "Full-stack Web & Mobile Developer at Moringa School. Building functional, scalable applications with modern technologies.",
+  bio: "Full-stack Developer based in Nairobi, Kenya. Recently completed software engineering training at Moringa School. Building production applications across web and mobile with React, TypeScript, Python, and API-driven architectures. Open to full-time roles and freelance projects.",
   email: "obedemoni@gmail.com",
   github: "obapluto-ob",
   location: "Kenya"
@@ -62,11 +63,72 @@ export const skillCategories = {
 
 export const projects: Project[] = [
   {
+    id: "bpay",
+    title: "BPay",
+    description: "Cross-border fintech application focused on Kenya–Nigeria crypto-to-fiat and payment workflows.",
+    technologies: ["React", "Node.js", "TypeScript", "APIs"],
+    githubUrl: "https://github.com/obapluto-ob/bpay-fintech-app",
+    liveUrl: "https://bpayapp.co.ke",
+    status: "production",
+    featured: true
+  },
+  {
+    id: "qrib",
+    title: "Qrib",
+    description: "Student accommodation platform designed to help students discover housing and connect with property hosts.",
+    technologies: ["React", "TypeScript", "Node.js", "PostgreSQL"],
+    githubUrl: "https://github.com/obapluto-ob/qrib",
+    status: "active",
+    featured: true
+  },
+  {
+    id: "codvault",
+    title: "CODVault",
+    description: "Full-stack Call of Duty: Mobile information platform with React, Express, SQLite, REST APIs, search, loadouts, guides and administrative content management.",
+    technologies: ["React", "Express", "SQLite", "REST API"],
+    githubUrl: "https://github.com/obapluto-ob/codvault",
+    status: "active",
+    featured: true
+  },
+  {
+    id: "cpars",
+    title: "CPARS Transportation",
+    description: "Freight booking and transportation platform focused on shipper and carrier workflows.",
+    technologies: ["React", "Node.js", "PostgreSQL", "APIs"],
+    githubUrl: "https://github.com/obapluto-ob/CPARS",
+    liveUrl: "https://cparstransportation.com",
+    status: "production",
+    featured: true
+  },
+  {
+    id: "jobboard",
+    title: "JobBoard",
+    description: "Full-stack job marketplace built with React and Flask, featuring JWT authentication, job listings, applications, saved jobs, profiles and protected routes.",
+    technologies: ["React", "Flask", "Python", "JWT", "SQLAlchemy"],
+    githubUrl: "https://github.com/obapluto-ob/module_5_project",
+    status: "active",
+    featured: false
+  },
+  {
+    id: "neemasynergy",
+    title: "Neema Synergy",
+    description: "Business website and Express-based content management system with administrative authentication, image management and dynamic site settings.",
+    technologies: ["Express", "Node.js", "JavaScript", "CMS"],
+    githubUrl: "https://github.com/obapluto-ob/neemasynergy",
+    status: "active",
+    featured: false
+  },
+  {
     id: "portfolio",
-    title: "Portfolio Website",
-    description: "Modern React portfolio with TypeScript and Tailwind CSS",
-    technologies: ["React", "TypeScript", "Tailwind CSS", "Vite"],
+    title: "Portfolio",
+    description: "React and TypeScript developer portfolio with interactive tooling, GitHub integrations, analytics, Firebase-backed engagement and responsive UI.",
+    technologies: ["React", "TypeScript", "Vite", "Firebase", "Tailwind CSS"],
     githubUrl: "https://github.com/obapluto-ob/portfolio",
-    liveUrl: "https://obapluto-ob.github.io/portfolio"
+    liveUrl: "https://obapluto-ob.github.io/portfolio",
+    status: "production",
+    featured: false
   }
 ]
+
+export const featuredProjects = projects.filter(p => p.featured)
+export const moreProjects = projects.filter(p => !p.featured)

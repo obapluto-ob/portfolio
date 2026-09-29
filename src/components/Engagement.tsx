@@ -19,7 +19,7 @@ const Engagement = () => {
     try {
       const q = query(collection(db, 'messages'), orderBy('timestamp', 'desc'), limit(10))
       const snapshot = await getDocs(q)
-      const msgs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+      const msgs = snapshot.docs.map(doc => ({ id: doc.id, text: '', timestamp: null, ...doc.data() }))
       setMessages(msgs)
     } catch (error) {
       console.error('Error loading messages:', error)
