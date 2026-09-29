@@ -201,7 +201,10 @@ export const SQLSandbox = ({ onCorrect, solved }: SandboxProps) => {
   const run = () => {
     if (solved) return
     const q = query.toLowerCase()
-    const correct = onCorrectRef.current(query)
+    // extract just the username injection value to match against ANSWERS
+    const usernameMatch = query.match(/username='([^']*(?:'[^']*)*)/i)
+    const injectedValue = usernameMatch ? "'" + usernameMatch[1] : query
+    const correct = onCorrectRef.current(injectedValue)
     if (correct || q.includes("or '1'='1") || q.includes('or 1=1') || q.includes("admin'--")) {
       setInjected(true)
       setResult('✓ Query returned ALL rows — authentication bypassed!\n\nid | username | email\n1  | admin    | admin@corp.local\n2  | root     | root@corp.local\n\nFlag: CTF{sql_injection_bypass}')
