@@ -22,6 +22,23 @@ const RegisterScreen = ({ onRegister }: { onRegister: (op: Operator) => void }) 
   const [loading, setLoading] = useState(false)
   const [mode, setMode] = useState<'unknown' | 'login' | 'register' | 'migrate'>('unknown')
   const [checking, setChecking] = useState(false)
+  const [recover, setRecover] = useState(false)
+  const [recoverEmail, setRecoverEmail] = useState('')
+  const [recoverResult, setRecoverResult] = useState<string | null>(null)
+  const [recoverLoading, setRecoverLoading] = useState(false)
+
+  const lookupByEmail = async () => {
+    const em = recoverEmail.trim().toLowerCase()
+    if (!em.includes('@')) return setError('Enter a valid email')
+    setRecoverLoading(true); setError(''); setRecoverResult(null)
+    try {
+      const snap = await getDocs(collection(db, 'ctf_operators'))
+      const match = snap.docs.find(d => (d.data() as Operator).email === em)
+      if (match) setRecoverResult((match.data() as Operator).callsign)
+      else setError('No operator found with that email')
+    } catch { setError('Lookup failed — check connection') }
+    setRecoverLoading(false)
+  }
 
   // after callsign is typed, check Firestore to determine mode
   const checkCallsign = async (cs: string) => {
@@ -89,11 +106,51 @@ const RegisterScreen = ({ onRegister }: { onRegister: (op: Operator) => void }) 
       <div className="text-center mb-6">
         <div className="text-2xl font-bold mb-1" style={{ color: 'var(--green)' }}>RED TEAM CTF</div>
         <p className="text-xs" style={{ color: 'var(--text-dim)' }}>
-          {isLogin ? 'Welcome back, operator' : isNew ? 'Register your operator identity' : isMigrate ? 'Verify identity to set your access key' : 'Enter your callsign to begin'}
+          {recover ? 'Operator callsign recovery' : isLogin ? 'Welcome back, operator' : isNew ? 'Register your operator identity' : isMigrate ? 'Verify identity to set your access key' : 'Enter your callsign to begin'}
         </p>
       </div>
-      <div className="rounded-lg p-4 space-y-3" style={{ background: 'rgba(0,20,0,0.6)', border: '1px solid var(--border)' }}>
-        <div>
+
+      {recover ? (
+        <div className="rounded-lg p-4 space-y-3" style={{ background: 'rgba(0,20,0,0.6)', border: '1px solid var(--border)' }}>
+          <div>
+            <label className="text-xs mb-1 block" style={{ color: 'var(--text-dim)' }}>EMAIL USED AT REGISTRATION</label>
+            <input
+              value={recoverEmail}
+              onChange={e => { setRecoverEmail(e.target.value); setError(''); setRecoverResult(null) }}
+              onKeyDown={e => e.key === 'Enter' && lookupByEmail()}
+              placeholder="operator@darknet.io"
+              type="email"
+              autoFocus
+              className="w-full px-3 py-2 rounded outline-none text-sm font-mono"
+              style={{ background: 'rgba(0,0,0,0.5)', border: '1px solid var(--border)', color: 'var(--green)' }}
+            />
+          </div>
+          {error && <div className="text-xs" style={{ color: '#ff5f57' }}>✗ {error}</div>}
+          {recoverResult && (
+            <div className="rounded p-3 text-center" style={{ background: 'rgba(0,255,65,0.08)', border: '1px solid var(--green)' }}>
+              <div className="text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Your callsign is:</div>
+              <div className="text-lg font-bold" style={{ color: 'var(--cyan)' }}>op://{recoverResult}</div>
+              <button
+                onClick={() => { setCallsign(recoverResult); setRecover(false); setRecoverEmail(''); setRecoverResult(null); checkCallsign(recoverResult) }}
+                className="mt-2 text-xs px-3 py-1.5 rounded font-bold"
+                style={{ background: 'var(--green)', color: 'var(--bg)' }}>
+                USE THIS CALLSIGN
+              </button>
+            </div>
+          )}
+          <button onClick={lookupByEmail} disabled={recoverLoading}
+            className="w-full py-3 rounded font-bold text-sm transition-all hover:scale-[1.01] disabled:opacity-50"
+            style={{ background: 'rgba(0,255,65,0.1)', color: 'var(--green)', border: '1px solid var(--green)' }}>
+            {recoverLoading ? 'SCANNING...' : '> LOCATE OPERATOR'}
+          </button>
+          <button onClick={() => { setRecover(false); setError(''); setRecoverResult(null) }}
+            className="w-full text-xs" style={{ color: 'var(--text-muted)' }}>
+            ← back to login
+          </button>
+        </div>
+      ) : (
+        <div className="rounded-lg p-4 space-y-3" style={{ background: 'rgba(0,20,0,0.6)', border: '1px solid var(--border)' }}>
+          <div>
           <label className="text-xs mb-1 block" style={{ color: 'var(--text-dim)' }}>CALLSIGN</label>
           <div className="flex items-center gap-2 rounded px-3 py-2" style={{ background: 'rgba(0,0,0,0.5)', border: '1px solid var(--border)' }}>
             <span style={{ color: 'var(--green-dim)' }} className="text-xs shrink-0">op://</span>
@@ -156,7 +213,12 @@ const RegisterScreen = ({ onRegister }: { onRegister: (op: Operator) => void }) 
           style={{ background: 'var(--green)', color: 'var(--bg)' }}>
           {loading ? 'AUTHENTICATING...' : isLogin ? '> ACCESS GRANTED — ENTER' : isMigrate ? '> SET ACCESS KEY' : '> DEPLOY OPERATOR'}
         </button>
-      </div>
+        <button onClick={() => { setRecover(true); setError('') }}
+          className="w-full text-xs pt-1" style={{ color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer' }}>
+          forgot your callsign?
+        </button>
+        </div>
+      )}
     </div>
   )
 }
