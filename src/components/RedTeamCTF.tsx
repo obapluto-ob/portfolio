@@ -491,17 +491,32 @@ const RedTeamCTF = () => {
   const [debriefRank, setDebriefRank] = useState<number | null>(null)
   const [confirmRetake, setConfirmRetake] = useState(false)
 
-  // Auto-login + sync to Firestore
+  // Auto-login + sync to Firestore — always pull latest from server, never overwrite with stale local
   useEffect(() => {
     const saved = localStorage.getItem(LS_KEY)
-    if (saved) {
-      try {
-        const op = JSON.parse(saved) as Operator
-        setOperator(op)
-        setDoc(doc(db, 'ctf_operators', op.callsign), op, { merge: true })
-          .catch(() => {})
-      } catch { localStorage.removeItem(LS_KEY) }
-    }
+    if (!saved) return
+    try {
+      const local = JSON.parse(saved) as Operator
+      setOperator(local) // show immediately while fetching
+      getDoc(doc(db, 'ctf_operators', local.callsign))
+        .then(snap => {
+          if (snap.exists()) {
+            const remote = snap.data() as Operator
+            // take the best of both — remote is source of truth for score/solved
+            const merged: Operator = {
+              ...remote,
+              lastSeen: Date.now(),
+            }
+            setOperator(merged)
+            localStorage.setItem(LS_KEY, JSON.stringify(merged))
+            setDoc(doc(db, 'ctf_operators', local.callsign), { lastSeen: merged.lastSeen }, { merge: true }).catch(() => {})
+          } else {
+            // not in Firestore yet — push local up
+            setDoc(doc(db, 'ctf_operators', local.callsign), local, { merge: true }).catch(() => {})
+          }
+        })
+        .catch(() => {}) // offline — keep local
+    } catch { localStorage.removeItem(LS_KEY) }
   }, [])
 
   const fetchLeaderboard = () => {
@@ -876,7 +891,7 @@ const RedTeamCTF = () => {
             <span className="text-xs" style={{ color: 'var(--cyan)' }}>{solved.size}/{CHALLENGES.length} flags</span>
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-1.5 flex-wrap justify-end">
           <button onClick={() => setShowLeader(v => !v)}
             className="text-xs px-2 py-1.5 rounded"
             style={{ border: '1px solid var(--border)', color: showLeader ? 'var(--green)' : 'var(--text-muted)', background: showLeader ? 'rgba(0,255,65,0.08)' : 'transparent' }}>
