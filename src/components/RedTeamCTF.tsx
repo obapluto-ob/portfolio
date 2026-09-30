@@ -954,8 +954,8 @@ const RedTeamCTF = () => {
             ? <div className="text-xs" style={{ color: 'var(--text-muted)' }}>No operators yet — be the first!</div>
             : leaderboard.map((e, i) => {
               const isYou = e.callsign === operator.callsign
-              const displayScore = isYou ? operator.score : e.score
-              const displaySolved = isYou ? operator.solved.length : e.solved
+              const displayScore = e.score
+              const displaySolved = e.solved
               const medalColors: Record<number, { outer: string; inner: string; shine: string; shadow: string }> = {
                 0: { outer: '#b8860b', inner: '#ffd700', shine: '#fff5a0', shadow: '#7a5800' },
                 1: { outer: '#7a7a7a', inner: '#c0c0c0', shine: '#f0f0f0', shadow: '#444' },
