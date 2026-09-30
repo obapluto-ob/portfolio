@@ -257,7 +257,7 @@ export const SQLSandbox = ({ onCorrect, solved }: SandboxProps) => {
         const rows = res[0].values.map(r => r.map(v => String(v ?? 'NULL')))
         setResult({ cols, rows })
         setBypassed(true)
-        onCorrectRef.current(injection)
+        onCorrectRef.current("' OR '1'='1'--") // bypass confirmed by real SQL execution
       } else {
         setResult({ cols: [], rows: [] })
       }
