@@ -20,12 +20,30 @@ const RegisterScreen = ({ onRegister }: { onRegister: (op: Operator) => void }) 
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [mode, setMode] = useState<'unknown' | 'login' | 'register' | 'migrate'>('unknown')
+  const [checking, setChecking] = useState(false)
+
+  // after callsign is typed, check Firestore to determine mode
+  const checkCallsign = async (cs: string) => {
+    if (cs.length < 3) { setMode('unknown'); return }
+    setChecking(true)
+    try {
+      const snap = await getDoc(doc(db, 'ctf_operators', cs))
+      if (snap.exists()) {
+        const data = snap.data() as Operator
+        setMode(data.passwordHash ? 'login' : 'migrate')
+      } else {
+        setMode('register')
+      }
+    } catch { setMode('register') }
+    setChecking(false)
+  }
 
   const submit = async () => {
     const cs = callsign.trim().toUpperCase().replace(/[^A-Z0-9_]/g, '')
     const em = email.trim().toLowerCase()
     if (cs.length < 3) return setError('Callsign must be at least 3 characters')
-    if (!em.includes('@')) return setError('Enter a valid email')
+    if (mode !== 'login' && !em.includes('@')) return setError('Enter a valid email')
     const WEAK = ['1234','0000','AAAA','BBBB','ABCD','1111','2222','3333','4444','5555','6666','7777','8888','9999','QWER','PASS','ROOT','HACK']
     if (password.length < 4) return setError('Access key must be at least 4 characters')
     if (WEAK.includes(password.toUpperCase())) return setError('Access key too weak — choose something unique')
@@ -35,14 +53,19 @@ const RegisterScreen = ({ onRegister }: { onRegister: (op: Operator) => void }) 
       const existing = await getDoc(doc(db, 'ctf_operators', cs))
       if (existing.exists()) {
         const data = existing.data() as Operator
-        if (data.email !== em) { setError('Callsign taken. Choose a different callsign.'); setLoading(false); return }
-        if (data.passwordHash && data.passwordHash !== pwHash) { setError('Wrong access key for this callsign.'); setLoading(false); return }
-        // existing account with no key yet — set it now (one-time migration)
+        if (mode === 'login') {
+          // returning operator with key set — only callsign + key needed
+          if (data.passwordHash !== pwHash) { setError('Wrong access key — try another one'); setLoading(false); return }
+        } else {
+          // migration: existing account, no key yet — need email to verify identity
+          if (data.email !== em) { setError('Email does not match this callsign'); setLoading(false); return }
+        }
         const op = { ...data, passwordHash: pwHash, lastSeen: Date.now() }
         await setDoc(doc(db, 'ctf_operators', cs), op, { merge: true })
         localStorage.setItem(LS_KEY, JSON.stringify(op))
         onRegister(op)
       } else {
+        // new registration
         const op: Operator = { callsign: cs, email: em, passwordHash: pwHash, solved: [], score: 0, hintsUsed: {}, joinedAt: Date.now(), lastSeen: Date.now() }
         await setDoc(doc(db, 'ctf_operators', cs), op)
         localStorage.setItem(LS_KEY, JSON.stringify(op))
@@ -57,12 +80,17 @@ const RegisterScreen = ({ onRegister }: { onRegister: (op: Operator) => void }) 
     setLoading(false)
   }
 
+  const isLogin = mode === 'login'
+  const isNew = mode === 'register'
+  const isMigrate = mode === 'migrate'
+
   return (
     <div className="w-full max-w-sm mx-auto font-mono px-2">
       <div className="text-center mb-6">
         <div className="text-2xl font-bold mb-1" style={{ color: 'var(--green)' }}>RED TEAM CTF</div>
-        <p className="text-xs" style={{ color: 'var(--text-dim)' }}>Register your operator identity to begin</p>
-        <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>Returning? Use same callsign + email + access key</p>
+        <p className="text-xs" style={{ color: 'var(--text-dim)' }}>
+          {isLogin ? 'Welcome back, operator' : isNew ? 'Register your operator identity' : isMigrate ? 'Verify identity to set your access key' : 'Enter your callsign to begin'}
+        </p>
       </div>
       <div className="rounded-lg p-4 space-y-3" style={{ background: 'rgba(0,20,0,0.6)', border: '1px solid var(--border)' }}>
         <div>
@@ -71,7 +99,13 @@ const RegisterScreen = ({ onRegister }: { onRegister: (op: Operator) => void }) 
             <span style={{ color: 'var(--green-dim)' }} className="text-xs shrink-0">op://</span>
             <input
               value={callsign}
-              onChange={e => setCallsign(e.target.value.toUpperCase().replace(/[^A-Z0-9_]/g, ''))}
+              onChange={e => {
+                const v = e.target.value.toUpperCase().replace(/[^A-Z0-9_]/g, '')
+                setCallsign(v)
+                setMode('unknown')
+                setError('')
+                if (v.length >= 3) checkCallsign(v)
+              }}
               onKeyDown={e => e.key === 'Enter' && submit()}
               placeholder="GHOST_ZERO"
               maxLength={16}
@@ -79,41 +113,48 @@ const RegisterScreen = ({ onRegister }: { onRegister: (op: Operator) => void }) 
               style={{ color: 'var(--green)' }}
               autoFocus
             />
+            {checking && <span className="text-xs" style={{ color: 'var(--text-muted)' }}>...</span>}
+            {!checking && isLogin && <span className="text-xs" style={{ color: 'var(--cyan)' }}>[FOUND]</span>}
+            {!checking && isNew && callsign.length >= 3 && <span className="text-xs" style={{ color: 'var(--green)' }}>[NEW]</span>}
           </div>
         </div>
-        <div>
-          <label className="text-xs mb-1 block" style={{ color: 'var(--text-dim)' }}>EMAIL</label>
-          <input
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && submit()}
-            placeholder="operator@darknet.io"
-            type="email"
-            className="w-full px-3 py-2 rounded outline-none text-sm font-mono"
-            style={{ background: 'rgba(0,0,0,0.5)', border: '1px solid var(--border)', color: 'var(--green)' }}
-          />
-        </div>
-        <div>
-          <label className="text-xs mb-1 block" style={{ color: 'var(--text-dim)' }}>ACCESS KEY <span style={{ color: 'var(--text-muted)' }}>— min 4 chars, you set this</span></label>
-          <div className="flex items-center gap-2 rounded px-3 py-2" style={{ background: 'rgba(0,0,0,0.5)', border: '1px solid var(--border)' }}>
-            <span className="text-xs shrink-0" style={{ color: 'var(--cyan)' }}>[KEY]</span>
+        {(isNew || isMigrate) && (
+          <div>
+            <label className="text-xs mb-1 block" style={{ color: 'var(--text-dim)' }}>EMAIL</label>
             <input
-              value={password}
-              onChange={e => setPassword(e.target.value.toUpperCase().replace(/[^A-Z0-9!@#$%^&*_\-]/g, ''))}
+              value={email}
+              onChange={e => setEmail(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && submit()}
-              placeholder="GHOST-7X2K"
-              maxLength={16}
-              type="password"
-              className="flex-1 bg-transparent outline-none text-sm font-mono tracking-widest min-w-0"
-              style={{ color: 'var(--green)' }}
+              placeholder="operator@darknet.io"
+              type="email"
+              className="w-full px-3 py-2 rounded outline-none text-sm font-mono"
+              style={{ background: 'rgba(0,0,0,0.5)', border: '1px solid var(--border)', color: 'var(--green)' }}
             />
           </div>
-        </div>
+        )}
+        {(isLogin || isNew || isMigrate) && (
+          <div>
+            <label className="text-xs mb-1 block" style={{ color: 'var(--text-dim)' }}>ACCESS KEY <span style={{ color: 'var(--text-muted)' }}>{isLogin ? '— enter your key' : '— min 4 chars, you set this'}</span></label>
+            <div className="flex items-center gap-2 rounded px-3 py-2" style={{ background: 'rgba(0,0,0,0.5)', border: '1px solid var(--border)' }}>
+              <span className="text-xs shrink-0" style={{ color: 'var(--cyan)' }}>[KEY]</span>
+              <input
+                value={password}
+                onChange={e => setPassword(e.target.value.toUpperCase().replace(/[^A-Z0-9!@#$%^&*_\-]/g, ''))}
+                onKeyDown={e => e.key === 'Enter' && submit()}
+                placeholder={isLogin ? '••••••••' : 'GHOST-7X2K'}
+                maxLength={16}
+                type="password"
+                className="flex-1 bg-transparent outline-none text-sm font-mono tracking-widest min-w-0"
+                style={{ color: 'var(--green)' }}
+              />
+            </div>
+          </div>
+        )}
         {error && <div className="text-xs" style={{ color: '#ff5f57' }}>✗ {error}</div>}
         <button onClick={submit} disabled={loading}
           className="w-full py-3 rounded font-bold text-sm transition-all hover:scale-[1.01] disabled:opacity-50"
           style={{ background: 'var(--green)', color: 'var(--bg)' }}>
-          {loading ? 'AUTHENTICATING...' : '> DEPLOY OPERATOR'}
+          {loading ? 'AUTHENTICATING...' : isLogin ? '> ACCESS GRANTED — ENTER' : isMigrate ? '> SET ACCESS KEY' : '> DEPLOY OPERATOR'}
         </button>
       </div>
     </div>
