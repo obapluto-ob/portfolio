@@ -594,12 +594,24 @@ export const BinarySandbox = ({ onCorrect, solved }: SandboxProps) => {
   const [inputs, setInputs] = useState(['', '', '', ''])
   const [checked, setChecked] = useState(false)
   const onCorrectRef = useRef(onCorrect)
+  const inputRefs = useRef<(HTMLInputElement | null)[]>([])
   useEffect(() => { onCorrectRef.current = onCorrect }, [onCorrect])
 
   const check = () => {
     if (solved) return
     setChecked(true)
     onCorrectRef.current(inputs.join(''))
+  }
+
+  const handleChange = (i: number, val: string) => {
+    if (solved) return
+    const letter = val.slice(-1).toUpperCase()
+    setInputs(p => { const n = [...p]; n[i] = letter; return n })
+    if (letter && i < BYTES.length - 1) inputRefs.current[i + 1]?.focus()
+  }
+
+  const handleKeyDown = (i: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Backspace' && !inputs[i] && i > 0) inputRefs.current[i - 1]?.focus()
   }
 
   return (
@@ -616,10 +628,12 @@ export const BinarySandbox = ({ onCorrect, solved }: SandboxProps) => {
                 <div className="mb-1 text-xs break-all" style={{ color: 'var(--cyan)' }}>{byte}</div>
                 <div className="mb-1" style={{ color: 'var(--text-muted)' }}>{decimal}</div>
                 <input
+                  ref={el => { inputRefs.current[i] = el }}
                   maxLength={1}
                   value={inputs[i]}
                   disabled={solved}
-                  onChange={e => { if (!solved) setInputs(p => { const n = [...p]; n[i] = e.target.value.toUpperCase(); return n }) }}
+                  onChange={e => handleChange(i, e.target.value)}
+                  onKeyDown={e => handleKeyDown(i, e)}
                   className="w-9 h-9 text-center rounded text-base font-bold outline-none mx-auto block disabled:opacity-50"
                   style={{
                     background: checked ? (correct ? 'rgba(0,255,65,0.15)' : 'rgba(255,95,87,0.15)') : 'rgba(0,255,65,0.05)',
