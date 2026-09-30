@@ -504,12 +504,14 @@ export const XSSSandbox = ({ onCorrect, solved }: SandboxProps) => {
   const onCorrectRef = useRef(onCorrect)
   useEffect(() => { onCorrectRef.current = onCorrect }, [onCorrect])
 
+  const lastPayloadRef = useRef('')
+
   // listen for real alert() calls from inside the iframe
   useEffect(() => {
     const handler = (e: MessageEvent) => {
       if (e.data?.type === 'xss-alert') {
         setAlerted(true)
-        onCorrectRef.current(e.data.payload)
+        onCorrectRef.current(lastPayloadRef.current)
       }
     }
     window.addEventListener('message', handler)
@@ -546,6 +548,7 @@ export const XSSSandbox = ({ onCorrect, solved }: SandboxProps) => {
 
   const post = () => {
     if (!payload.trim() || solved) return
+    lastPayloadRef.current = payload
     const newComments = [...comments, { user: 'you', text: payload }]
     setComments(newComments)
     setSrcdoc(buildDoc(newComments))
