@@ -9,9 +9,15 @@ const LS_KEY = 'ctf_operator'
 interface LeaderEntry { callsign: string; score: number; solved: number }
 
 // ── Registration ───────────────────────────────────────────────────────────
+const hashPassword = async (pw: string) => {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pw))
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('')
+}
+
 const RegisterScreen = ({ onRegister }: { onRegister: (op: Operator) => void }) => {
   const [callsign, setCallsign] = useState('')
   const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -20,24 +26,31 @@ const RegisterScreen = ({ onRegister }: { onRegister: (op: Operator) => void }) 
     const em = email.trim().toLowerCase()
     if (cs.length < 3) return setError('Callsign must be at least 3 characters')
     if (!em.includes('@')) return setError('Enter a valid email')
+    const WEAK = ['1234','0000','AAAA','BBBB','ABCD','1111','2222','3333','4444','5555','6666','7777','8888','9999','QWER','PASS','ROOT','HACK']
+    if (password.length < 4) return setError('Access key must be at least 4 characters')
+    if (WEAK.includes(password.toUpperCase())) return setError('Access key too weak — choose something unique')
     setLoading(true); setError('')
     try {
+      const pwHash = await hashPassword(password)
       const existing = await getDoc(doc(db, 'ctf_operators', cs))
       if (existing.exists()) {
         const data = existing.data() as Operator
-        if (data.email !== em) { setError('Callsign taken. Use your original email.'); setLoading(false); return }
-        const op = { ...data, lastSeen: Date.now() }
+        if (data.email !== em) { setError('Callsign taken. Choose a different callsign.'); setLoading(false); return }
+        if (data.passwordHash && data.passwordHash !== pwHash) { setError('Wrong access key for this callsign.'); setLoading(false); return }
+        // existing account with no key yet — set it now (one-time migration)
+        const op = { ...data, passwordHash: pwHash, lastSeen: Date.now() }
         await setDoc(doc(db, 'ctf_operators', cs), op, { merge: true })
         localStorage.setItem(LS_KEY, JSON.stringify(op))
         onRegister(op)
       } else {
-        const op: Operator = { callsign: cs, email: em, solved: [], score: 0, hintsUsed: {}, joinedAt: Date.now(), lastSeen: Date.now() }
+        const op: Operator = { callsign: cs, email: em, passwordHash: pwHash, solved: [], score: 0, hintsUsed: {}, joinedAt: Date.now(), lastSeen: Date.now() }
         await setDoc(doc(db, 'ctf_operators', cs), op)
         localStorage.setItem(LS_KEY, JSON.stringify(op))
         onRegister(op)
       }
     } catch {
-      const op: Operator = { callsign: cs, email: em, solved: [], score: 0, hintsUsed: {}, joinedAt: Date.now(), lastSeen: Date.now() }
+      const pwHash = await hashPassword(password)
+      const op: Operator = { callsign: cs, email: em, passwordHash: pwHash, solved: [], score: 0, hintsUsed: {}, joinedAt: Date.now(), lastSeen: Date.now() }
       localStorage.setItem(LS_KEY, JSON.stringify(op))
       onRegister(op)
     }
@@ -49,7 +62,7 @@ const RegisterScreen = ({ onRegister }: { onRegister: (op: Operator) => void }) 
       <div className="text-center mb-6">
         <div className="text-2xl font-bold mb-1" style={{ color: 'var(--green)' }}>RED TEAM CTF</div>
         <p className="text-xs" style={{ color: 'var(--text-dim)' }}>Register your operator identity to begin</p>
-        <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>Returning? Use same callsign + email to restore progress</p>
+        <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>Returning? Use same callsign + email + access key</p>
       </div>
       <div className="rounded-lg p-4 space-y-3" style={{ background: 'rgba(0,20,0,0.6)', border: '1px solid var(--border)' }}>
         <div>
@@ -79,6 +92,22 @@ const RegisterScreen = ({ onRegister }: { onRegister: (op: Operator) => void }) 
             className="w-full px-3 py-2 rounded outline-none text-sm font-mono"
             style={{ background: 'rgba(0,0,0,0.5)', border: '1px solid var(--border)', color: 'var(--green)' }}
           />
+        </div>
+        <div>
+          <label className="text-xs mb-1 block" style={{ color: 'var(--text-dim)' }}>ACCESS KEY <span style={{ color: 'var(--text-muted)' }}>— min 4 chars, you set this</span></label>
+          <div className="flex items-center gap-2 rounded px-3 py-2" style={{ background: 'rgba(0,0,0,0.5)', border: '1px solid var(--border)' }}>
+            <span className="text-xs shrink-0" style={{ color: 'var(--cyan)' }}>[KEY]</span>
+            <input
+              value={password}
+              onChange={e => setPassword(e.target.value.toUpperCase().replace(/[^A-Z0-9!@#$%^&*_\-]/g, ''))}
+              onKeyDown={e => e.key === 'Enter' && submit()}
+              placeholder="GHOST-7X2K"
+              maxLength={16}
+              type="password"
+              className="flex-1 bg-transparent outline-none text-sm font-mono tracking-widest min-w-0"
+              style={{ color: 'var(--green)' }}
+            />
+          </div>
         </div>
         {error && <div className="text-xs" style={{ color: '#ff5f57' }}>✗ {error}</div>}
         <button onClick={submit} disabled={loading}

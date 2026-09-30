@@ -23,6 +23,7 @@ export interface Challenge {
 export interface Operator {
   callsign: string
   email: string
+  passwordHash: string
   solved: ChallengeId[]
   score: number
   hintsUsed: Record<string, number>
