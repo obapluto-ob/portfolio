@@ -192,12 +192,26 @@ const MissionDebrief = ({ operator, rank, onDismiss }: { operator: Operator; ran
   const clearanceLevel = operator.score >= maxScore * 0.9 ? 'LEVEL 5 — ELITE' : operator.score >= maxScore * 0.65 ? 'LEVEL 4 — SENIOR' : operator.score >= maxScore * 0.4 ? 'LEVEL 3 — OPERATIVE' : 'LEVEL 2 — RECRUIT'
   const clearancePct   = Math.round(Math.min((operator.score / maxScore) * 100, 100))
   const clearanceColor = operator.score >= maxScore * 0.9 ? '#cc00ff' : operator.score >= maxScore * 0.65 ? '#ff5f57' : operator.score >= maxScore * 0.4 ? '#febc2e' : 'var(--green)'
+  const bgImage = operator.score >= maxScore * 0.9
+    ? 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=1600&q=80'
+    : operator.score >= maxScore * 0.65
+    ? 'https://images.unsplash.com/photo-1563986768609-322da13575f3?w=1600&q=80'
+    : operator.score >= maxScore * 0.4
+    ? 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=1600&q=80'
+    : 'https://images.unsplash.com/photo-1510511459019-5dda7724fd87?w=1600&q=80'
+  const stripImage = operator.score >= maxScore * 0.9
+    ? 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800&q=80'
+    : operator.score >= maxScore * 0.65
+    ? 'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?w=800&q=80'
+    : operator.score >= maxScore * 0.4
+    ? 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=800&q=80'
+    : 'https://images.unsplash.com/photo-1629654297299-c8506221ca97?w=800&q=80'
   const flawless = Object.keys(operator.hintsUsed).length === 0
 
   const stats = [
     { label: 'CALLSIGN',      value: `op://${operator.callsign}`,          color: 'var(--cyan)',  big: false },
     { label: 'CLEARANCE',     value: clearanceLevel,                        color: clearanceColor, big: false },
-    { label: 'FINAL SCORE',   value: `${score} pts`,                        color: '#ffd700',      big: true  },
+    { label: 'FINAL SCORE',   value: `${score} / ${maxScore} pts`,           color: '#ffd700',      big: true  },
     { label: 'FLAGS CAPTURED',value: `${operator.solved.length}/${CHALLENGES.length}`, color: 'var(--green)', big: true },
     { label: 'GLOBAL RANK',   value: rank !== null ? `#${rank}` : '—',      color: rank !== null && rank <= 3 ? '#ffd700' : 'var(--text)', big: true },
     { label: 'HINTS USED',    value: flawless ? 'NONE' : `${Object.keys(operator.hintsUsed).length}`, color: flawless ? 'var(--green)' : '#febc2e', big: true },
@@ -207,7 +221,7 @@ const MissionDebrief = ({ operator, rank, onDismiss }: { operator: Operator; ran
     <div className="fixed inset-0 z-50 flex flex-col items-center justify-center font-mono overflow-auto py-8">
       {/* Background */}
       <div className="absolute inset-0" style={{
-        backgroundImage: 'url(https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=1600&q=80)',
+        backgroundImage: `url(${bgImage})`,
         backgroundSize: 'cover', backgroundPosition: 'center',
         filter: 'brightness(0.18) saturate(0.4) hue-rotate(80deg)',
       }} />
@@ -280,7 +294,7 @@ const MissionDebrief = ({ operator, rank, onDismiss }: { operator: Operator; ran
               display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16,
             }}>
               <img
-                src="https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800&q=80"
+                src={stripImage}
                 alt=""
                 style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', borderRadius: 12, filter: 'brightness(0.15) saturate(0.2) hue-rotate(90deg)' }}
               />
@@ -317,7 +331,7 @@ const MissionDebrief = ({ operator, rank, onDismiss }: { operator: Operator; ran
               }}>
               {/* Circuit image strip */}
               <div style={{ width:'100%', height:72, borderRadius:8, marginBottom:12, overflow:'hidden', transform:'translateZ(20px)', boxShadow:'0 8px 24px rgba(0,0,0,0.6)', position:'relative', flexShrink:0 }}>
-                <img src="https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800&q=80" alt=""
+                <img src={stripImage} alt=""
                   style={{ width:'100%', height:'100%', objectFit:'cover', filter:'brightness(0.45) saturate(0.3) hue-rotate(90deg)', display:'block', position:'relative', zIndex:0 }} />
                 <div style={{ position:'absolute', inset:0, zIndex:1, background:'linear-gradient(90deg,rgba(0,255,65,0.15),transparent,rgba(0,255,65,0.15))', pointerEvents:'none' }} />
               </div>
@@ -817,16 +831,18 @@ const RedTeamCTF = () => {
           <div className="rounded-lg p-6 max-w-sm w-full mx-4 space-y-4" style={{ background: 'rgba(0,12,0,0.98)', border: '1px solid #ff5f57', boxShadow: '0 0 40px rgba(255,95,87,0.2)' }}>
             <div className="text-sm font-bold" style={{ color: '#ff5f57' }}>[ WARNING ] RETAKE MISSION</div>
             <div className="text-xs space-y-1" style={{ color: 'var(--text-dim)' }}>
-              <div>This will reset:</div>
-              <div style={{ color: '#ff5f57' }}>  — all solved challenges</div>
-              <div style={{ color: '#ff5f57' }}>  — your score ({operator.score} pts)</div>
-              <div style={{ color: '#ff5f57' }}>  — all hints used</div>
-              <div className="mt-2" style={{ color: 'var(--text-muted)' }}>Your callsign <span style={{ color: 'var(--cyan)' }}>op://{operator.callsign}</span> is kept.</div>
+              <div>This will unlock all challenges from scratch.</div>
+              <div style={{ color: '#febc2e' }}>  — challenges reset to unsolved</div>
+              <div style={{ color: '#febc2e' }}>  — hints cleared</div>
+              <div style={{ color: 'var(--green)' }}>  — your score ({operator.score} pts) is kept</div>
+              <div style={{ color: 'var(--green)' }}>  — recover the remaining {CHALLENGES.reduce((s,c) => s + c.points, 0) - operator.score} pts to hit 100%</div>
+              <div className="mt-2" style={{ color: 'var(--text-muted)' }}>Callsign <span style={{ color: 'var(--cyan)' }}>op://{operator.callsign}</span> stays on leaderboard.</div>
             </div>
             <div className="flex gap-2">
               <button
                 onClick={async () => {
-                  const fresh: Operator = { ...operator, solved: [], score: 0, hintsUsed: {}, lastSeen: Date.now() }
+                  // keep score — retake just unlocks all challenges again
+                  const fresh: Operator = { ...operator, solved: [], hintsUsed: {}, lastSeen: Date.now() }
                   await saveOperator(fresh)
                   setSelected(null)
                   setAttempts({})

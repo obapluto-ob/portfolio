@@ -501,7 +501,6 @@ export const XSSSandbox = ({ onCorrect, solved }: SandboxProps) => {
     { user: 'bob', text: 'Very useful, thanks.' },
   ])
   const [alerted, setAlerted] = useState(false)
-  const iframeRef = useRef<HTMLIFrameElement>(null)
   const onCorrectRef = useRef(onCorrect)
   useEffect(() => { onCorrectRef.current = onCorrect }, [onCorrect])
 
@@ -517,22 +516,22 @@ export const XSSSandbox = ({ onCorrect, solved }: SandboxProps) => {
     return () => window.removeEventListener('message', handler)
   }, [])
 
-  const buildIframeDoc = (posts: { user: string; text: string }[]) => {
+  const buildDoc = (posts: { user: string; text: string }[]) => {
     const commentsHtml = posts.map(c =>
       `<div class="comment"><span class="user">${c.user}:</span> ${c.text}</div>`
     ).join('')
-    // intercept alert() so it posts a message to parent instead of native dialog
     return `<!DOCTYPE html><html><head><style>
       body{margin:0;padding:8px;background:#000d00;color:#4a9e5c;font-family:monospace;font-size:12px}
       .comment{padding:3px 0;border-bottom:1px solid #0a2a0a}
       .user{color:#00fff9}
+      .executed{background:#003300;border:1px solid #00ff41;padding:6px;margin:4px 0;color:#00ff41;font-weight:bold}
     </style></head><body>
     <script>
       window.alert = function(msg) {
         parent.postMessage({ type: 'xss-alert', payload: String(msg) }, '*')
-        const el = document.createElement('div')
-        el.style.cssText = 'background:#003300;border:1px solid #00ff41;padding:6px;margin:4px 0;color:#00ff41;font-weight:bold'
-        el.textContent = 'alert("' + msg + '") — EXECUTED'
+        var el = document.createElement('div')
+        el.className = 'executed'
+        el.textContent = 'alert("' + msg + '") \u2014 EXECUTED'
         document.body.prepend(el)
       }
     <\/script>
@@ -540,27 +539,18 @@ export const XSSSandbox = ({ onCorrect, solved }: SandboxProps) => {
     </body></html>`
   }
 
+  const [srcdoc, setSrcdoc] = useState(() => buildDoc([
+    { user: 'alice', text: 'Great site!' },
+    { user: 'bob', text: 'Very useful, thanks.' },
+  ]))
+
   const post = () => {
     if (!payload.trim() || solved) return
     const newComments = [...comments, { user: 'you', text: payload }]
     setComments(newComments)
-    if (iframeRef.current) {
-      const doc = iframeRef.current.contentDocument
-      if (doc) {
-        doc.open()
-        doc.write(buildIframeDoc(newComments))
-        doc.close()
-      }
-    }
+    setSrcdoc(buildDoc(newComments))
     setPayload('')
   }
-
-  // init iframe on mount
-  useEffect(() => {
-    if (!iframeRef.current) return
-    const doc = iframeRef.current.contentDocument
-    if (doc) { doc.open(); doc.write(buildIframeDoc(comments)); doc.close() }
-  }, [])
 
   return (
     <div className="space-y-3 text-xs font-mono">
@@ -575,9 +565,9 @@ export const XSSSandbox = ({ onCorrect, solved }: SandboxProps) => {
           // Live comment section — unsanitised HTML renders inside real iframe
         </div>
         <iframe
-          ref={iframeRef}
           sandbox="allow-scripts"
-          style={{ width: '100%', height: 120, border: 'none', display: 'block' }}
+          srcDoc={srcdoc}
+          style={{ width: '100%', height: 130, border: 'none', display: 'block' }}
           title="xss-sandbox"
         />
       </div>
