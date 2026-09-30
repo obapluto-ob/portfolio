@@ -171,7 +171,7 @@ export const ANSWERS: Record<ChallengeId, string[]> = {
   bruteforce: ['1969'],
   cipher: ['hall hall the hacker', 'HALL HALL THE HACKER'],
   portscan: ['22'],
-  sqli: ["' or '1'='1", "' or '1'='1'--", "' or 1=1--", "' or '1'='1' --", "admin'--", "' OR '1'='1", "' OR '1'='1'--", "' OR 1=1--"],
+  sqli: ["' or '1'='1", "' or '1'='1'--", "' or 1=1--", "' or '1'='1' --", "admin'--", "' OR '1'='1", "' OR '1'='1'--", "' OR 1=1--", "or '1'='1", "or '1'='1'--", "OR '1'='1", "OR '1'='1'--", "or 1=1--", "OR 1=1--"],
   hash: ['password'],
   xss: ["<script>alert('xss')</script>", '<script>alert("xss")</script>', "<script>alert('XSS')</script>", '<script>alert("XSS")</script>'],
   steganography: ['obed', 'OBED'],

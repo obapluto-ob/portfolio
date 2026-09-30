@@ -270,22 +270,22 @@ export const SQLSandbox = ({ onCorrect, solved }: SandboxProps) => {
     <div className="space-y-3 text-xs font-mono">
       {loading && <div className="text-xs" style={{ color: 'var(--text-muted)' }}>Initializing SQLite engine...</div>}
       <div className="rounded p-3 space-y-2" style={{ background: 'rgba(0,0,0,0.5)', border: '1px solid var(--border)' }}>
-        <div className="text-xs mb-1" style={{ color: 'var(--text-muted)' }}>// Real SQLite — inject into the username field:</div>
-        <div className="flex flex-wrap items-center gap-1">
-          <span style={{ color: 'var(--text-dim)' }}>SELECT * FROM users WHERE username=</span>
+        <div className="text-xs mb-1" style={{ color: 'var(--text-muted)' }}>// Real SQLite — type your injection into the username field:</div>
+        <div className="flex flex-wrap items-center gap-1 text-xs">
+          <span style={{ color: 'var(--text-dim)' }}>username=</span>
           <span style={{ color: 'var(--green)' }}>'</span>
           <input
             value={injection}
             onChange={e => { if (!solved) setInjection(e.target.value) }}
             onKeyDown={e => e.key === 'Enter' && run()}
             disabled={solved || loading}
-            placeholder="inject here..."
+            placeholder="' OR '1'='1'--"
             className="bg-transparent outline-none font-mono disabled:opacity-50"
-            style={{ color: '#febc2e', borderBottom: '1px solid var(--green)', minWidth: 80, width: Math.max(80, injection.length * 8) }}
+            style={{ color: '#febc2e', borderBottom: '1px solid var(--green)', minWidth: 160, width: Math.max(160, injection.length * 8) }}
             autoFocus
           />
           <span style={{ color: 'var(--green)' }}>'</span>
-          <span style={{ color: 'var(--text-dim)' }}>AND password='...';</span>
+          <span style={{ color: 'var(--text-dim)' }}>AND password='...'</span>
         </div>
         <div className="mt-2 p-2 rounded text-xs break-all" style={{ background: 'rgba(0,255,65,0.04)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}>
           <span style={{ color: 'var(--text-dim)' }}>Preview: </span>{fullQuery}
