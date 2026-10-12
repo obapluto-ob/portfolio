@@ -66,6 +66,21 @@ class Analytics {
       label: `${error}${component ? ` in ${component}` : ''}`
     })
   }
+
+  trackUTM() {
+    const params = new URLSearchParams(window.location.search)
+    const source = params.get('utm_source')
+    const medium = params.get('utm_medium')
+    const campaign = params.get('utm_campaign')
+
+    if (source) {
+      this.track({
+        action: 'utm_visit',
+        category: 'acquisition',
+        label: `${source} / ${medium ?? 'none'} / ${campaign ?? 'none'}`
+      })
+    }
+  }
 }
 
 export default Analytics.getInstance()
