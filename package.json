@@ -1,8 +1,23 @@
 {
-  "name": "portfolio",
-  "private": true,
-  "version": "0.0.0",
+  "name": "@obapluto-ob/portfolio",
+  "private": false,
+  "version": "2.0.25",
+  "description": "Obed Emoni Lopeyok — Full-stack Developer Portfolio. A hacker-themed React + TypeScript portfolio template.",
   "type": "module",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/obapluto-ob/portfolio.git"
+  },
+  "homepage": "https://obapluto-ob.github.io/portfolio",
+  "keywords": ["portfolio", "react", "typescript", "hacker", "developer", "template"],
+  "author": "Obed Emoni Lopeyok",
+  "license": "MIT",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "dev": "vite",
     "build": "vite build",

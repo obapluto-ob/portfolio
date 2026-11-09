@@ -84,27 +84,43 @@ const Hero = () => {
             <div className="absolute inset-0 pointer-events-none" style={{
               background: 'repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,255,65,0.03) 3px,rgba(0,255,65,0.03) 4px)'
             }} />
-            {/* Avatar SVG — stylised hacker silhouette */}
-            <svg viewBox="0 0 80 80" className="w-16 h-16 mb-1" aria-hidden="true">
-              {/* Head */}
-              <circle cx="40" cy="26" r="13" fill="none" stroke="#00ff41" strokeWidth="1.5" opacity="0.9"/>
-              {/* Body */}
-              <path d="M18 72 Q18 50 40 48 Q62 50 62 72" fill="none" stroke="#00ff41" strokeWidth="1.5" opacity="0.9"/>
-              {/* Hood lines */}
-              <path d="M27 20 Q28 10 40 8 Q52 10 53 20" fill="none" stroke="#00ff41" strokeWidth="1" opacity="0.5"/>
-              {/* Visor / glasses */}
-              <rect x="29" y="24" width="9" height="5" rx="1" fill="rgba(0,255,65,0.15)" stroke="#00ff41" strokeWidth="1"/>
-              <rect x="42" y="24" width="9" height="5" rx="1" fill="rgba(0,255,65,0.15)" stroke="#00ff41" strokeWidth="1"/>
-              <line x1="38" y1="26.5" x2="42" y2="26.5" stroke="#00ff41" strokeWidth="1"/>
-              {/* Scan line across face */}
-              <line x1="27" y1="31" x2="53" y2="31" stroke="#00ff41" strokeWidth="0.5" opacity="0.3"/>
-              {/* Chest circuit lines */}
-              <line x1="40" y1="48" x2="40" y2="58" stroke="#00ff41" strokeWidth="1" opacity="0.4"/>
-              <line x1="34" y1="54" x2="46" y2="54" stroke="#00ff41" strokeWidth="1" opacity="0.4"/>
-              <circle cx="40" cy="58" r="2" fill="#00ff41" opacity="0.6"/>
+            {/* Hacker avatar — circuit skull art */}
+            <svg viewBox="0 0 80 80" className="w-20 h-20" aria-hidden="true">
+              {/* Outer hex ring */}
+              <polygon points="40,4 68,20 68,60 40,76 12,60 12,20" fill="none" stroke="#00ff41" strokeWidth="0.8" opacity="0.3"/>
+              <polygon points="40,9 63,22 63,58 40,71 17,58 17,22" fill="none" stroke="#00ff41" strokeWidth="0.5" opacity="0.2"/>
+              {/* Skull dome */}
+              <path d="M26 38 Q26 18 40 18 Q54 18 54 38 L54 46 L26 46 Z" fill="rgba(0,255,65,0.06)" stroke="#00ff41" strokeWidth="1.2"/>
+              {/* Jaw */}
+              <rect x="28" y="46" width="24" height="10" rx="2" fill="rgba(0,255,65,0.06)" stroke="#00ff41" strokeWidth="1.2"/>
+              {/* Teeth */}
+              <line x1="34" y1="46" x2="34" y2="56" stroke="#00ff41" strokeWidth="0.8" opacity="0.6"/>
+              <line x1="40" y1="46" x2="40" y2="56" stroke="#00ff41" strokeWidth="0.8" opacity="0.6"/>
+              <line x1="46" y1="46" x2="46" y2="56" stroke="#00ff41" strokeWidth="0.8" opacity="0.6"/>
+              {/* Eye sockets — glowing */}
+              <ellipse cx="33" cy="36" rx="5" ry="5" fill="rgba(0,255,65,0.15)" stroke="#00ff41" strokeWidth="1"/>
+              <ellipse cx="47" cy="36" rx="5" ry="5" fill="rgba(0,255,65,0.15)" stroke="#00ff41" strokeWidth="1"/>
+              {/* Eye pupils */}
+              <circle cx="33" cy="36" r="2" fill="#00ff41" opacity="0.9"/>
+              <circle cx="47" cy="36" r="2" fill="#00ff41" opacity="0.9"/>
+              {/* Nose cavity */}
+              <path d="M38 41 L40 44 L42 41" fill="none" stroke="#00ff41" strokeWidth="0.8" opacity="0.6"/>
+              {/* Circuit traces from skull */}
+              <line x1="12" y1="36" x2="26" y2="36" stroke="#00ff41" strokeWidth="0.8" opacity="0.5"/>
+              <line x1="54" y1="36" x2="68" y2="36" stroke="#00ff41" strokeWidth="0.8" opacity="0.5"/>
+              <circle cx="12" cy="36" r="1.5" fill="#00ff41" opacity="0.7"/>
+              <circle cx="68" cy="36" r="1.5" fill="#00ff41" opacity="0.7"/>
+              {/* Top circuit nodes */}
+              <line x1="40" y1="4" x2="40" y2="18" stroke="#00ff41" strokeWidth="0.8" opacity="0.4"/>
+              <circle cx="40" cy="11" r="1.5" fill="#00ff41" opacity="0.6"/>
+              {/* Bottom circuit */}
+              <line x1="40" y1="56" x2="40" y2="71" stroke="#00ff41" strokeWidth="0.8" opacity="0.4"/>
+              <circle cx="40" cy="63" r="1.5" fill="#00ff41" opacity="0.6"/>
+              {/* Glitch scan line */}
+              <line x1="26" y1="30" x2="54" y2="30" stroke="#00ff41" strokeWidth="0.4" opacity="0.25"/>
+              <line x1="26" y1="42" x2="54" y2="42" stroke="#00ff41" strokeWidth="0.4" opacity="0.15"/>
             </svg>
-            <span className="text-xs font-mono" style={{ color: 'var(--green-dim)' }}>OBL_v2</span>
-            <span className="text-xs font-mono mt-0.5" style={{ color: 'var(--text-muted)', fontSize: '9px' }}>IDENTITY VERIFIED</span>
+            <span className="text-xs font-mono" style={{ color: 'var(--green-dim)', fontSize: '9px' }}>OBL_v2 // VERIFIED</span>
           </div>
         </div>
 
