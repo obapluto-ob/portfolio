@@ -1,15 +1,15 @@
 import { useState, useEffect } from 'react'
 
 const BOOT_LINES = [
-  { text: 'BIOS v2.0.25 — POST check passed...', delay: 200 },
-  { text: 'Initializing secure connection [TLS 1.3]...', delay: 250 },
-  { text: 'Loading kernel modules [crypto, net, fs]...', delay: 200 },
-  { text: 'Verifying identity: obapluto-ob...', delay: 300 },
-  { text: 'Identity confirmed. Clearance: FULL', delay: 200 },
-  { text: 'Decrypting portfolio data...', delay: 250 },
-  { text: 'Loading project database — 7 records found', delay: 200 },
-  { text: 'Establishing Firebase link...', delay: 250 },
-  { text: '> ACCESS GRANTED. WELCOME, OPERATOR.', delay: 200 },
+  { text: 'BIOS v2.0.25 — POST check passed...', delay: 80 },
+  { text: 'Initializing secure connection [TLS 1.3]...', delay: 100 },
+  { text: 'Loading kernel modules [crypto, net, fs]...', delay: 80 },
+  { text: 'Verifying identity: obapluto-ob...', delay: 120 },
+  { text: 'Identity confirmed. Clearance: FULL', delay: 80 },
+  { text: 'Decrypting portfolio data...', delay: 100 },
+  { text: 'Loading project database — 7 records found', delay: 80 },
+  { text: 'Establishing Firebase link...', delay: 100 },
+  { text: '> ACCESS GRANTED. WELCOME, OPERATOR.', delay: 80 },
 ]
 
 interface Props { onDone: () => void }
